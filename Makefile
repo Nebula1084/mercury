@@ -12,6 +12,7 @@ APP           = $(shell find client -type f)
 IMPORT_PATH   = $(shell pwd | sed "s|^$(GOPATH)/src/||g")
 APP_NAME      = $(shell pwd | sed 's:.*/::')
 TARGET        = $(BIN)/$(APP_NAME)
+PRICER        = $(BIN)/pricer
 GIT_HASH      = $(shell git rev-parse HEAD)
 LDFLAGS       = -w -X main.commitHash=$(GIT_HASH)
 GLIDE         := $(shell command -v glide 2> /dev/null)
@@ -22,6 +23,7 @@ clean:
 	@rm -rf server/data/static/build/*
 	@rm -rf server/data/bundle.server.js
 	@rm -rf $(BINDATA)
+	make -C pricer clean
 
 $(ON):
 	go install $(IMPORT_PATH)/vendor/github.com/olebedev/on
@@ -34,6 +36,9 @@ $(BUNDLE): $(APP)
 
 $(TARGET): $(BUNDLE) $(BINDATA)
 	@go build -ldflags '$(LDFLAGS)' -o $@ $(IMPORT_PATH)/server
+
+build-pricer:
+	make -C pricer
 
 kill:
 	@kill `cat $(PID)` || true
@@ -51,6 +56,9 @@ restart: $(BINDATA) kill $(TARGET)
 
 $(BINDATA):
 	$(GO_BINDATA) $(BINDATA_FLAGS) -o=$@ server/data/...
+
+run-pricer: build-pricer
+	$(PRICER)
 
 lint:
 	@yarn run eslint || true
