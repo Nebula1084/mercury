@@ -18,22 +18,23 @@ class Usage extends Component {
       callback();
     });
   }
+
   /*eslint-enable */
 
   render() {
     return <div className={usage}>
-      <Helmet title='Usage' />
+      <Helmet title='Usage'/>
       <h2 className={example}>Usage:</h2>
       <div className={p}>
         <span className={todo}>// TODO: write an article</span>
         <pre className={todo}>config:
           {JSON.stringify(this.props.config, null, 2)}</pre>
       </div>
-      <br />
+      <br/>
       go <IndexLink to='/' className={link}>home</IndexLink>
     </div>;
   }
 
 }
 
-export default connect(store => ({ config: store.config }))(Usage);
+export default connect(store => ({config: store.config}))(Usage);

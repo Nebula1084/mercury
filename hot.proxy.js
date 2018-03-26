@@ -24,13 +24,13 @@ config.devtool = 'cheap-module-eval-source-map';
 var app = new require('express')();
 
 var compiler = webpack(config);
-app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }));
+app.use(webpackDevMiddleware(compiler, {noInfo: true, publicPath: config.output.publicPath}));
 app.use(webpackHotMiddleware(compiler));
 app.use(proxy('http://localhost:' + port));
 
 port++;
 
-app.listen(port, function(error) {
+app.listen(port, function (error) {
   if (error) {
     console.error(error);
   } else {

@@ -1,18 +1,19 @@
-var path = require('path');
-var webpack = require('webpack');
-var autoprefixer = require('autoprefixer');
-var precss = require('precss');
-var functions = require('postcss-functions');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
 
-var postCssLoader = [
+const webpack = require('webpack');
+const autoprefixer = require('autoprefixer');
+const precss = require('precss');
+const functions = require('postcss-functions');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+const postCssLoader = [
   'css-loader?modules',
   '&localIdentName=[name]__[local]___[hash:base64:5]',
   '&disableStructuralMinification',
   '!postcss-loader'
 ];
 
-var plugins = [
+let plugins = [
   new webpack.NoErrorsPlugin(),
   new webpack.optimize.DedupePlugin(),
   new ExtractTextPlugin('bundle.css'),
@@ -30,9 +31,10 @@ if (process.env.NODE_ENV === 'production') {
   ]);
 
   postCssLoader.splice(1, 1); // drop human readable names
-};
+}
 
-var config  = {
+
+const config = {
   entry: {
     bundle: path.join(__dirname, 'client/index.js')
   },
@@ -43,16 +45,32 @@ var config  = {
   },
   plugins: plugins,
   module: {
+    rules: [{
+      test: /\.less$/,
+      use: [{
+        loader: 'style-loader' // creates style nodes from JS strings
+      }, {
+        loader: 'css-loader' // translates CSS into CommonJS
+      }, {
+        loader: 'less-loader', // compiles Less to CSS
+      }]
+    }],
     loaders: [
       {test: /\.css/, loader: ExtractTextPlugin.extract('style-loader', postCssLoader.join(''))},
       {test: /\.(png|gif)$/, loader: 'url-loader?name=[name]@[hash].[ext]&limit=5000'},
       {test: /\.svg$/, loader: 'url-loader?name=[name]@[hash].[ext]&limit=5000!svgo-loader?useConfig=svgo1'},
       {test: /\.(pdf|ico|jpg|eot|otf|woff|ttf|mp4|webm)$/, loader: 'file-loader?name=[name]@[hash].[ext]'},
       {test: /\.json$/, loader: 'json-loader'},
+      {test: /\.less$/, loader: 'style-loader!css-loader!less-loader',},
       {
         test: /\.jsx?$/,
         include: path.join(__dirname, 'client'),
-        loaders: ['babel']
+        loader: 'babel',
+        query: {
+          plugins: [
+            ['import', {libraryName: 'antd', style: 'css'}]
+          ]
+        }
       }
     ]
   },
@@ -82,7 +100,7 @@ var config  = {
       {removeDesc: true}
     ]
   },
-  postcss: function() {
+  postcss: function () {
     return [
       autoprefixer,
       precss({
