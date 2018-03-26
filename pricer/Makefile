@@ -26,21 +26,20 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-
-%.o:%.cpp %.h
-	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+%.o:%.cpp
+	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
 
 %.o:%.cu
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
-cpu_test: CpuTest.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+cpu_test: CpuTest.o option/European.o
+	$(CC) -o $@ $+ $(LIBRARIES)
 
 gpu_test: GpuTest.o
-	$(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:
 	@rm -rf *.o
