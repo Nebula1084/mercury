@@ -17,11 +17,11 @@ GIT_HASH      = $(shell git rev-parse HEAD)
 LDFLAGS       = -w -X main.commitHash=$(GIT_HASH)
 GLIDE         := $(shell command -v glide 2> /dev/null)
 
-build: $(ON) $(GO_BINDATA) clean $(TARGET)
+build: $(BINDATA)
+	@go build -ldflags '$(LDFLAGS)' -o $(TARGET) $(IMPORT_PATH)/server
 
 clean:
-	@rm -rf server/data/static/build/*
-	@rm -rf server/data/bundle.server.js
+	@rm -rf server/data/*
 	@rm -rf $(BINDATA)
 	make -C pricer clean
 
@@ -31,22 +31,17 @@ $(ON):
 $(GO_BINDATA):
 	go install $(IMPORT_PATH)/vendor/github.com/jteeuwen/go-bindata/...
 
-$(BUNDLE): $(APP)
-	@$(NODE_BIN)/webpack --progress --colors --bail
-
-$(TARGET): $(BUNDLE) $(BINDATA)
-	@go build -ldflags '$(LDFLAGS)' -o $@ $(IMPORT_PATH)/server
-
 build-pricer:
 	make -C pricer
+
+build-client:
+	cd client && npm run build
 
 kill:
 	@kill `cat $(PID)` || true
 
-serve: $(ON) $(GO_BINDATA) clean $(BUNDLE) restart
-	@BABEL_ENV=dev node hot.proxy &
-	@$(NODE_BIN)/webpack --watch &
-	@$(ON) -m 2 $(GO_FILES) $(TEMPLATES) | xargs -n1 -I{} make restart || make kill
+serve: build
+	$(TARGET) run
 
 restart: BINDATA_FLAGS += -debug
 restart: LDFLAGS += -X main.debug=true
@@ -54,7 +49,7 @@ restart: $(BINDATA) kill $(TARGET)
 	@echo restart the app...
 	@$(TARGET) run & echo $$! > $(PID)
 
-$(BINDATA):
+$(BINDATA): $(GO_BINDATA)
 	$(GO_BINDATA) $(BINDATA_FLAGS) -o=$@ server/data/...
 
 run-pricer: build-pricer

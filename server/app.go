@@ -1,15 +1,11 @@
 package main
 
 import (
-	"html/template"
-	"io"
 	"net/http"
 
 	"github.com/elazarl/go-bindata-assetfs"
-	"github.com/itsjamie/go-bindata-templates"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/nu7hatch/gouuid"
 	"github.com/olebedev/config"
 )
 
@@ -20,7 +16,6 @@ import (
 type App struct {
 	Engine *echo.Echo
 	Conf   *config.Config
-	React  *React
 	API    *API
 }
 
@@ -51,18 +46,11 @@ func NewApp(opts ...AppOptions) *App {
 	// Make an engine
 	engine := echo.New()
 
-	// Use precompiled embedded templates
-	engine.Renderer = NewTemplate()
-
 	// Set up echo debug level
 	engine.Debug = conf.UBool("debug")
 
 	// Regular middlewares
 	engine.Use(middleware.Recover())
-
-	engine.GET("/favicon.ico", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/static/images/favicon.ico")
-	})
 
 	engine.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `${method} | ${status} | ${uri} -> ${latency_human}` + "\n",
@@ -73,29 +61,7 @@ func NewApp(opts ...AppOptions) *App {
 		Conf:   conf,
 		Engine: engine,
 		API:    &API{},
-		React: NewReact(
-			conf.UString("duktape.path"),
-			conf.UBool("debug"),
-			engine,
-		),
 	}
-
-	// Map app and uuid for every requests
-	app.Engine.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("app", app)
-			id, _ := uuid.NewV4()
-			c.Set("uuid", id)
-			return next(c)
-		}
-	})
-
-	// Bind api hadling for URL api.prefix
-	app.API.Bind(
-		app.Engine.Group(
-			app.Conf.UString("api.prefix"),
-		),
-	)
 
 	// Create file http server from bindata
 	fileServerHandler := http.FileServer(&assetfs.AssetFS{
@@ -116,14 +82,10 @@ func NewApp(opts ...AppOptions) *App {
 				if ok && httpErr.Code == http.StatusNotFound {
 					// check if file exists
 					// omit first `/`
-					if _, err := Asset(c.Request().URL.Path[1:]); err == nil {
-						fileServerHandler.ServeHTTP(
-							c.Response().Writer,
-							c.Request())
-						return nil
-					}
-					// if static file not found handle request via react application
-					return app.React.Handle(c)
+					fileServerHandler.ServeHTTP(
+						c.Response(),
+						c.Request())
+					return nil
 				}
 			}
 			// Move further if err is not `Not Found`
@@ -137,23 +99,6 @@ func NewApp(opts ...AppOptions) *App {
 // Run runs the app
 func (app *App) Run() {
 	Must(app.Engine.Start(":" + app.Conf.UString("port")))
-}
-
-// Template is custom renderer for Echo, to render html from bindata
-type Template struct {
-	templates *template.Template
-}
-
-// NewTemplate creates a new template
-func NewTemplate() *Template {
-	return &Template{
-		templates: binhtml.New(Asset, AssetDir).MustLoadDirectory("templates"),
-	}
-}
-
-// Render renders template
-func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 // AppOptions is options struct
