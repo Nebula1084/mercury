@@ -14,7 +14,7 @@ const Routers = function ({ history, app }) {
     {
       path: '/',
       component: App,
-      getIndexRoute (nextState, cb) {
+      getIndexRoute(nextState, cb) {
         require.ensure([], (require) => {
           registerModel(app, require('./models/dashboard'))
           cb(null, { component: require('./routes/dashboard/') })
@@ -22,8 +22,17 @@ const Routers = function ({ history, app }) {
       },
       childRoutes: [
         {
+          path: 'european',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/dashboard'))
+              cb(null, require('./routes/european/'))
+            }, 'dashboard')
+          }
+        },
+        {
           path: 'dashboard',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/dashboard'))
               cb(null, require('./routes/dashboard/'))
@@ -32,7 +41,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'profile',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/profile'))
               cb(null, require('./routes/userprofile/'))
@@ -41,7 +50,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'setting',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/app'))
               cb(null, require('./routes/setting/'))
@@ -50,7 +59,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'acknowledge',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               cb(null, require('./routes/acknowledge/'))
             }, 'acknowledge')
@@ -58,7 +67,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'alert',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               cb(null, require('./routes/sweetalert/'))
             }, 'sweetalert')
@@ -66,7 +75,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'table',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/table'))
               cb(null, require('./routes/table/'))
@@ -75,7 +84,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'editor',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               cb(null, require('./routes/editor/'))
             }, 'quillEditor')
@@ -83,7 +92,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'map',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               cb(null, require('./routes/map/'))
             }, 'googleMap')
@@ -91,7 +100,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'grid',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               cb(null, require('./routes/grid/'))
             }, 'antdGrid')
@@ -99,7 +108,7 @@ const Routers = function ({ history, app }) {
         },
         {
           path: 'charts',
-          getComponent (nextState, cb) {
+          getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/charts'))
               cb(null, require('./routes/charts/'))
@@ -110,7 +119,7 @@ const Routers = function ({ history, app }) {
     },
     {
       path: 'login',
-      getComponent (nextState, cb) {
+      getComponent(nextState, cb) {
         require.ensure([], (require) => {
           registerModel(app, require('./models/login'))
           cb(null, require('./routes/login/'))
@@ -119,7 +128,7 @@ const Routers = function ({ history, app }) {
     },
     {
       path: 'lock',
-      getComponent (nextState, cb) {
+      getComponent(nextState, cb) {
         require.ensure([], (require) => {
           registerModel(app, require('./models/app'))
           cb(null, require('./routes/lock/'))
@@ -128,7 +137,7 @@ const Routers = function ({ history, app }) {
     },
     {
       path: '*',
-      getComponent (nextState, cb) {
+      getComponent(nextState, cb) {
         require.ensure([], (require) => {
           cb(null, require('./routes/notfound/'))
         }, 'notfound')

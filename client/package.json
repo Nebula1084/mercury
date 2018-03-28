@@ -39,7 +39,8 @@
     "npm-run-all": "^4.0.2",
     "redbox-react": "^1.4.3",
     "roadhog": "^0.6.0",
-    "sweetalert2": "^6.6.6"
+    "sweetalert2": "^6.6.6",
+    "@vtex/react-csv-parse":"^1.1.0"
   },
   "scripts": {
     "start": "roadhog server",
