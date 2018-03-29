@@ -3,6 +3,7 @@ import MercuryTable from "../../components/table";
 import { Input, Icon, Row, Col, Button } from 'antd';
 import styles from './european.less';
 import CsvParse from '@vtex/react-csv-parse';
+import { connect, select } from 'dva';
 
 const columns = [{
     title: 'Stock Price',
@@ -57,7 +58,10 @@ class ImportButton extends React.Component {
         return (
             <div >
                 <input ref="fileInput" type="file" onChange={this.props.onChange} style={{ display: "none" }} />
-                <Button onClick={() => this.refs.fileInput.click()}>
+                <Button onClick={() => {
+                    this.refs.fileInput.value = "";
+                    this.refs.fileInput.click()
+                }}>
                     <Icon type="upload" /> Import
                 </Button>
             </div >
@@ -65,21 +69,16 @@ class ImportButton extends React.Component {
     }
 }
 
-export default class EuropeanPricer extends React.Component {
+class EuropeanPricer extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            instruments: []
-        }
+        const { dispatch } = this.props;
+        this.dispatch = dispatch;
     }
 
     handleData = data => {
-
-        for (let i = 0; i < data.length; i++) {
-            data[i].key = i;
-        }
-        this.setState({ instruments: data })
+        this.dispatch({ type: 'european/add', payload: data });
     }
 
     render() {
@@ -100,8 +99,10 @@ export default class EuropeanPricer extends React.Component {
                     />
 
                 </div>
-                <MercuryTable columns={columns} dataSource={this.state.instruments} />
+                <MercuryTable columns={columns} dataSource={this.props.european.rows} />
             </div>
         )
     }
 }
+
+export default connect(({ european }) => ({ european }))(EuropeanPricer);

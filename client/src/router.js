@@ -25,9 +25,9 @@ const Routers = function ({ history, app }) {
           path: 'european',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {
-              registerModel(app, require('./models/dashboard'))
+              registerModel(app, require('./models/pricer/european'))
               cb(null, require('./routes/european/'))
-            }, 'dashboard')
+            }, 'european')
           }
         },
         {
