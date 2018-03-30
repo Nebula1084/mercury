@@ -1,10 +1,9 @@
 import React from 'react';
 import MercuryTable from "../../components/table";
 import { Input, Icon, Row, Col, Button } from 'antd';
-import styles from './european.less';
 import { connect, select } from 'dva';
 
-class EuropeanPricer extends React.Component {
+class ArithmeticPricer extends React.Component {
 
     constructor(props) {
         super(props);
@@ -16,11 +15,11 @@ class EuropeanPricer extends React.Component {
         return (
             <div>
                 <MercuryTable
-                    header="European Pricer"
-                    namespace="european"
-                    addStock={false}
-                    columns={this.props.european.columns}
-                    dataSource={this.props.european.rows}
+                    header="Monte-Carlo Arithmetic Asian Pricer"
+                    namespace="arithmetic"
+                    addStock={true}
+                    columns={this.props.arithmetic.columns}
+                    dataSource={this.props.arithmetic.rows}
                     dispatch={this.props.dispatch}
                 />
             </div>
@@ -28,4 +27,4 @@ class EuropeanPricer extends React.Component {
     }
 }
 
-export default connect(({ european }) => ({ european }))(EuropeanPricer);
+export default connect(({ arithmetic }) => ({ arithmetic }))(ArithmeticPricer);

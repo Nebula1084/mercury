@@ -31,7 +31,7 @@ export default class MercuryTable extends React.Component {
     let ret = [];
     for (let column of columns) {
       let title = column;
-      let dataIndex = this.toCamelCase(column)
+      let dataIndex = this.toCamelCase(column);
       let key = dataIndex;
       ret.push({
         title: title,
@@ -74,7 +74,7 @@ export default class MercuryTable extends React.Component {
   }
 
   load = (data) => {
-    this.props.dispatch({ type: 'european/import', payload: data });
+    this.props.dispatch({ type: this.props.namespace + '/import', payload: data });
   }
 
   add = () => {
@@ -83,27 +83,27 @@ export default class MercuryTable extends React.Component {
     for (let header of headers) {
       data[header] = '0'
     }
-    this.props.dispatch({ type: 'european/add', payload: data });
+    this.props.dispatch({ type: this.props.namespace + '/add', payload: data });
   }
 
   alter = () => {
-    this.props.dispatch({ type: 'european/alter' });
+    this.props.dispatch({ type: this.props.namespace + '/alter' });
   }
 
   update = (value, index, column) => {
-    this.props.dispatch({ type: 'european/update', payload: { value, index, column } });
+    this.props.dispatch({ type: this.props.namespace + '/update', payload: { value, index, column } });
   }
 
   edit = (index) => {
-    this.props.dispatch({ type: 'european/edit', payload: index })
+    this.props.dispatch({ type: this.props.namespace + '/edit', payload: index })
   }
 
   save = (index) => {
-    this.props.dispatch({ type: 'european/save', payload: index })
+    this.props.dispatch({ type: this.props.namespace + '/save', payload: index })
   }
 
   cancel = (index) => {
-    this.props.dispatch({ type: 'european/cancel', payload: index })
+    this.props.dispatch({ type: this.props.namespace + '/cancel', payload: index })
   }
 
   componentDidMount() {
@@ -116,9 +116,10 @@ export default class MercuryTable extends React.Component {
       <div>
         <Row className={styles.header}>
           <Col span={24}>
-            <h1>European Pricer</h1>
+            <h1>{this.props.header}</h1>
           </Col>
         </Row>
+
         <div className={styles['showcase-toolbar']}>
           <Form layout="inline">
             <Form.Item>
@@ -136,12 +137,16 @@ export default class MercuryTable extends React.Component {
                 <Icon type="plus-circle-o" /> Option
               </Button>
             </Form.Item>
-
-            <Form.Item>
-              <Button onClick={this.alter} className={styles['tool-button']}>
-                <Icon type="plus-circle-o" /> Stock
-              </Button>
-            </Form.Item>
+            {
+              this.props.addStock ?
+                <Form.Item>
+                  <Button onClick={this.alter} className={styles['tool-button']}>
+                    <Icon type="plus-circle-o" /> Stock
+                  </Button>
+                </Form.Item>
+                :
+                ""
+            }
           </Form>
         </div>
 

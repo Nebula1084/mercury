@@ -1,10 +1,9 @@
 import React from 'react';
 import MercuryTable from "../../components/table";
 import { Input, Icon, Row, Col, Button } from 'antd';
-import styles from './european.less';
 import { connect, select } from 'dva';
 
-class EuropeanPricer extends React.Component {
+class VolatilityImplier extends React.Component {
 
     constructor(props) {
         super(props);
@@ -16,11 +15,11 @@ class EuropeanPricer extends React.Component {
         return (
             <div>
                 <MercuryTable
-                    header="European Pricer"
-                    namespace="european"
+                    header="Volatility Implier"
+                    namespace="volatility"
                     addStock={false}
-                    columns={this.props.european.columns}
-                    dataSource={this.props.european.rows}
+                    columns={this.props.volatility.columns}
+                    dataSource={this.props.volatility.rows}
                     dispatch={this.props.dispatch}
                 />
             </div>
@@ -28,4 +27,4 @@ class EuropeanPricer extends React.Component {
     }
 }
 
-export default connect(({ european }) => ({ european }))(EuropeanPricer);
+export default connect(({ volatility }) => ({ volatility }))(VolatilityImplier);

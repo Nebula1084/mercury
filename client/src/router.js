@@ -16,9 +16,9 @@ const Routers = function ({ history, app }) {
       component: App,
       getIndexRoute(nextState, cb) {
         require.ensure([], (require) => {
-          registerModel(app, require('./models/dashboard'))
-          cb(null, { component: require('./routes/dashboard/') })
-        }, 'dashboard')
+          registerModel(app, require('./models/pricer/european'))
+          cb(null, require('./routes/european/'))
+        }, 'european')
       },
       childRoutes: [
         {
@@ -31,79 +31,57 @@ const Routers = function ({ history, app }) {
           }
         },
         {
+          path: 'volatility',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/volatility'))
+              cb(null, require('./routes/volatility/'))
+            }, 'volatility')
+          }
+        },
+        {
+          path: 'american',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/american'))
+              cb(null, require('./routes/american/'))
+            }, 'american')
+          }
+        },
+        {
+          path: 'close',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/close'))
+              cb(null, require('./routes/close/'))
+            }, 'close')
+          }
+        },
+        {
+          path: 'arithmetic',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/arithmetic'))
+              cb(null, require('./routes/arithmetic/'))
+            }, 'arithmetic')
+          }
+        },
+        {
+          path: 'geometric',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/geometric'))
+              cb(null, require('./routes/geometric/'))
+            }, 'geometric')
+          }
+        },
+        {
           path: 'dashboard',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {
               registerModel(app, require('./models/dashboard'))
               cb(null, require('./routes/dashboard/'))
             }, 'dashboard')
-          }
-        },
-        {
-          path: 'profile',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/profile'))
-              cb(null, require('./routes/userprofile/'))
-            }, 'userprofile')
-          }
-        },
-        {
-          path: 'setting',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/app'))
-              cb(null, require('./routes/setting/'))
-            }, 'setting')
-          }
-        },
-        {
-          path: 'acknowledge',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              cb(null, require('./routes/acknowledge/'))
-            }, 'acknowledge')
-          }
-        },
-        {
-          path: 'alert',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              cb(null, require('./routes/sweetalert/'))
-            }, 'sweetalert')
-          }
-        },
-        {
-          path: 'table',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/table'))
-              cb(null, require('./routes/table/'))
-            }, 'antdtable')
-          }
-        },
-        {
-          path: 'editor',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              cb(null, require('./routes/editor/'))
-            }, 'quillEditor')
-          }
-        },
-        {
-          path: 'map',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              cb(null, require('./routes/map/'))
-            }, 'googleMap')
-          }
-        },
-        {
-          path: 'grid',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              cb(null, require('./routes/grid/'))
-            }, 'antdGrid')
           }
         },
         {
@@ -116,24 +94,6 @@ const Routers = function ({ history, app }) {
           }
         }
       ]
-    },
-    {
-      path: 'login',
-      getComponent(nextState, cb) {
-        require.ensure([], (require) => {
-          registerModel(app, require('./models/login'))
-          cb(null, require('./routes/login/'))
-        }, 'login')
-      }
-    },
-    {
-      path: 'lock',
-      getComponent(nextState, cb) {
-        require.ensure([], (require) => {
-          registerModel(app, require('./models/app'))
-          cb(null, require('./routes/lock/'))
-        }, 'lock')
-      }
     },
     {
       path: '*',

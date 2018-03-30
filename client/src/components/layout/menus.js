@@ -25,32 +25,39 @@ class Menus extends React.Component {
 
     return (
       <Menu mode={sidebarFold ? 'vertical' : 'inline'} theme='light' onClick={onMenuClick} selectedKeys={Array.of(menukey)}>
-        <Menu.Item key='european'>
-          <Link to='/european'>
-            <Icon type='appstore-o' />European
-          </Link>
-        </Menu.Item>
+        <SubMenu key='european' title={<span><Icon type='bars' /><span>European</span></span>}>
+          <Menu.Item key='price'>
+            <Link to='/european' style={{ color: '#999' }}>
+              Price
+            </Link>
+          </Menu.Item>
+          <Menu.Item key='volatility'>
+            <Link to='/volatility' style={{ color: '#999' }}>
+              Volatility
+            </Link>
+          </Menu.Item>
+        </SubMenu>
 
-        <Menu.Item key='setting'>
-          <Link to='/setting'>
+        <Menu.Item key='american'>
+          <Link to='/american'>
             <Icon type='setting' />American
           </Link>
         </Menu.Item>
 
-        <SubMenu key='component' title={<span><Icon type='bars' /><span>Asian</span></span>}>
-          <Menu.Item key='charts'>
-            <Link to='/charts' style={{ color: '#999' }}>
-              Charts
+        <SubMenu key='asian' title={<span><Icon type='bars' /><span>Asian</span></span>}>
+          <Menu.Item key='close'>
+            <Link to='/close' style={{ color: '#999' }}>
+              Close
             </Link>
           </Menu.Item>
-          <Menu.Item key='grid'>
-            <Link to='/grid' style={{ color: '#999' }}>
-              Grid
+          <Menu.Item key='geometric'>
+            <Link to='/geometric' style={{ color: '#999' }}>
+              Geometric
             </Link>
           </Menu.Item>
-          <Menu.Item key='table'>
-            <Link to='/table' style={{ color: '#999' }}>
-              Table
+          <Menu.Item key='arithmetic'>
+            <Link to='/arithmetic' style={{ color: '#999' }}>
+              Arithmetic
             </Link>
           </Menu.Item>
         </SubMenu>
