@@ -3,10 +3,6 @@ import MercuryTable from "../../components/table";
 import { Input, Icon, Row, Col, Button } from 'antd';
 import styles from './european.less';
 import { connect, select } from 'dva';
-const columns = [
-    'Stock Price', 'Volatility', 'Maturity', 'Strike', 'Interest', 'Repo',
-]
-
 
 class EuropeanPricer extends React.Component {
 
@@ -18,8 +14,8 @@ class EuropeanPricer extends React.Component {
 
     render() {
         return (
-            <div>                
-                <MercuryTable columns={columns} dataSource={this.props.european.rows} dispatch={this.props.dispatch}/>
+            <div>
+                <MercuryTable columns={this.props.european.columns} dataSource={this.props.european.rows} dispatch={this.props.dispatch} />
             </div>
         )
     }

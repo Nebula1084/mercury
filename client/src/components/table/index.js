@@ -86,6 +86,10 @@ export default class MercuryTable extends React.Component {
     this.props.dispatch({ type: 'european/add', payload: data });
   }
 
+  alter = () => {
+    this.props.dispatch({ type: 'european/alter' });
+  }
+
   update = (value, index, column) => {
     this.props.dispatch({ type: 'european/update', payload: { value, index, column } });
   }
@@ -129,7 +133,13 @@ export default class MercuryTable extends React.Component {
 
             <Form.Item>
               <Button onClick={this.add} className={styles['tool-button']}>
-                <Icon type="plus-circle-o" /> Add
+                <Icon type="plus-circle-o" /> Option
+              </Button>
+            </Form.Item>
+
+            <Form.Item>
+              <Button onClick={this.alter} className={styles['tool-button']}>
+                <Icon type="plus-circle-o" /> Stock
               </Button>
             </Form.Item>
           </Form>

@@ -1,13 +1,18 @@
-import { load, add, update, edit, save, cancel } from "./util.js"
+import { load, add, alter, update, edit, save, cancel } from "./util.js"
 export default {
     namespace: 'european',
     state: {
         rows: [],
-        stash: []
+        stash: [],
+        columns: [
+            'Volatility', 'Maturity', 'Strike', 'Interest', 'Repo', 'Stock Price 0',
+        ],
+        stockNum: 1
     },
     reducers: {
         import: load,
         add: add,
+        alter, alter,
         update: update,
         edit: edit,
         save: save,
