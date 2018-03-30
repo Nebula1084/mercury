@@ -5,12 +5,14 @@ import { Layout } from '../components'
 import NProgress from 'nprogress'
 import classnames from 'classnames'
 import '../themes/skin.less'
+import { LocaleProvider } from 'antd';
+import enUS from 'antd/lib/locale-provider/en_US';
 
 const { Header, Sider, LayoutStyles } = Layout
 let lastHref
 
 class App extends React.Component {
-  render () {
+  render() {
     const { children, dispatch, app, loading, routes } = this.props
     const { sidebarFold, siderRespons, fullScreen, sidebarBgImg, sidebarBgColor, isShowSidebarBgImg, menuResponsVisible } = app
 
@@ -19,10 +21,10 @@ class App extends React.Component {
       sidebarFold,
       siderRespons,
       menuResponsVisible,
-      onLock () {
+      onLock() {
         dispatch({ type: 'app/lock' })
       },
-      onFull (element) {
+      onFull(element) {
         if (element.requestFullscreen) {
           element.requestFullscreen()
         } else if (element.mozRequestFullScreen) {
@@ -34,7 +36,7 @@ class App extends React.Component {
         }
         dispatch({ type: 'app/switchFullScreen' })
       },
-      onExitFull () {
+      onExitFull() {
         if (document.exitFullscreen) {
           document.exitFullscreen()
         } else if (document.mozCancelFullScreen) {
@@ -44,13 +46,13 @@ class App extends React.Component {
         }
         dispatch({ type: 'app/switchFullScreen' })
       },
-      onLogout () {
+      onLogout() {
         hashHistory.push('/login')
       },
-      onSwitchSidebar () {
+      onSwitchSidebar() {
         dispatch({ type: 'app/switchSidebar' })
       },
-      onSwitchMenuPopover () {
+      onSwitchMenuPopover() {
         dispatch({ type: 'app/switchMenuPopver' })
       }
     }
@@ -70,30 +72,32 @@ class App extends React.Component {
     }
 
     return (
-      <div className={classnames(LayoutStyles.layout, { [LayoutStyles.fold]: siderRespons ? false : sidebarFold }, { [LayoutStyles.responsive]: siderRespons })}>
-        {
-          !siderRespons
-          ? <aside className={classnames(LayoutStyles.siderbar, LayoutStyles[`siderbar-bg-${sidebarBgColor}`])}>
-            {
-              isShowSidebarBgImg
-              ? <div className={LayoutStyles['siderbar-bg-img']} style={{ backgroundImage: `url(${require(`../assets/img/sidebar-${sidebarBgImg}.jpg`)})` }} />
+      <LocaleProvider locale={enUS}>
+        <div className={classnames(LayoutStyles.layout, { [LayoutStyles.fold]: siderRespons ? false : sidebarFold }, { [LayoutStyles.responsive]: siderRespons })}>
+          {
+            !siderRespons
+              ? <aside className={classnames(LayoutStyles.siderbar, LayoutStyles[`siderbar-bg-${sidebarBgColor}`])}>
+                {
+                  isShowSidebarBgImg
+                    ? <div className={LayoutStyles['siderbar-bg-img']} style={{ backgroundImage: `url(${require(`../assets/img/sidebar-${sidebarBgImg}.jpg`)})` }} />
+                    : ''
+                }
+                <Sider {...siderbarProps} />
+              </aside>
               : ''
-            }
-            <Sider {...siderbarProps} />
-          </aside>
-          : ''
-        }
-        <div className={LayoutStyles.main}>
-          <Header {...headerProps} />
-          <div className={LayoutStyles.container}>
-            <div className={LayoutStyles.content}>
-              {children}
+          }
+          <div className={LayoutStyles.main}>
+            <Header {...headerProps} />
+            <div className={LayoutStyles.container}>
+              <div className={LayoutStyles.content}>
+                {children}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </LocaleProvider>
     )
   }
 }
 
-export default connect(({...state}) => ({ ...state }))(App)
+export default connect(({ ...state }) => ({ ...state }))(App)

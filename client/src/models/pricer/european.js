@@ -1,10 +1,18 @@
-import { add } from "./util.js"
+import { load, update, edit, save, cancel } from "./util.js"
 export default {
     namespace: 'european',
     state: {
-        rows: []
+        rows: [],
+        stash: []
     },
     reducers: {
-        add: add
+        import: load,
+        add(state) {
+
+        },
+        update: update,
+        edit: edit,
+        save: save,
+        cancel: cancel
     }
 }
