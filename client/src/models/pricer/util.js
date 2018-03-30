@@ -12,6 +12,10 @@ export function load(state, { payload }) {
     return insert(state, payload, false)
 }
 
+export function add(state, { payload }) {
+    return insert(state, [payload], false)
+}
+
 export function update(state, { payload: { value, index, column } }) {
     let record = state.rows[index]
     record[column] = value;

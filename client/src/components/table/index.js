@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'dva';
-import { Table, Radio, Form, Row, Col, Popconfirm } from 'antd';
+import { Table, Button, Icon, Row, Col, Form, Popconfirm } from 'antd';
 import ImportButton from './ImportButton'
 import NumericInput from './NumericInput'
 import CsvParse from '@vtex/react-csv-parse';
@@ -73,23 +73,32 @@ export default class MercuryTable extends React.Component {
     return ret;
   }
 
-  handleData = data => {
+  load = (data) => {
     this.props.dispatch({ type: 'european/import', payload: data });
   }
 
-  update(value, index, column) {
+  add = () => {
+    let headers = this.buildHeaders(this.props.columns)
+    let data = {}
+    for (let header of headers) {
+      data[header] = '0'
+    }
+    this.props.dispatch({ type: 'european/add', payload: data });
+  }
+
+  update = (value, index, column) => {
     this.props.dispatch({ type: 'european/update', payload: { value, index, column } });
   }
 
-  edit(index) {
+  edit = (index) => {
     this.props.dispatch({ type: 'european/edit', payload: index })
   }
 
-  save(index) {
+  save = (index) => {
     this.props.dispatch({ type: 'european/save', payload: index })
   }
 
-  cancel(index) {
+  cancel = (index) => {
     this.props.dispatch({ type: 'european/cancel', payload: index })
   }
 
@@ -107,14 +116,23 @@ export default class MercuryTable extends React.Component {
           </Col>
         </Row>
         <div className={styles['showcase-toolbar']}>
-          <CsvParse
-            fileHeaders={headers}
-            keys={headers}
-            separators={[',', ';']}
-            onDataUploaded={this.handleData}
-            render={onChange => <ImportButton onChange={onChange} />}
-          />
+          <Form layout="inline">
+            <Form.Item>
+              <CsvParse
+                fileHeaders={headers}
+                keys={headers}
+                separators={[',', ';']}
+                onDataUploaded={this.load}
+                render={onChange => <ImportButton onChange={onChange} />}
+              />
+            </Form.Item>
 
+            <Form.Item>
+              <Button onClick={this.add} className={styles['tool-button']}>
+                <Icon type="plus-circle-o" /> Add
+              </Button>
+            </Form.Item>
+          </Form>
         </div>
 
         <div className={styles['showcase-container']}>
