@@ -63,12 +63,19 @@ export default class MercuryTable extends React.Component {
                 : <span>
                   <a onClick={() => this.edit(record.key)}>Edit</a>
                   <span className="ant-divider" />
-                  <a>Price</a>
+                  <a onClick={() => this.price(record.key)}>Price</a>
                 </span>
             }
           </div>
         )
       }
+    })
+
+    ret.push({
+      title: 'Price',
+      key: 'price',
+      dataIndex: 'price',
+      width: 150
     })
     return ret;
   }
@@ -104,6 +111,10 @@ export default class MercuryTable extends React.Component {
 
   cancel = (index) => {
     this.props.dispatch({ type: this.props.namespace + '/cancel', payload: index })
+  }
+
+  price = (index) => {
+    this.props.dispatch({ type: this.props.namespace + '/price', payload: index })
   }
 
   componentDidMount() {

@@ -39,6 +39,7 @@ export function save(state, { payload: index }) {
     let record = state.rows[index];
     record.editing = false;
     delete state.stash[index]
+    delete state.rows[index].price
     return { ...state }
 }
 

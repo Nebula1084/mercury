@@ -15,7 +15,7 @@ const table = Mock.mock({
 });
 
 module.exports = {
-  ['GET /tables'] (req, res) {
+  ['GET /tables'](req, res) {
     const { query } = req;
     let { pageSize, page } = query;
     pageSize = pageSize || 10;

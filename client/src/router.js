@@ -16,9 +16,9 @@ const Routers = function ({ history, app }) {
       component: App,
       getIndexRoute(nextState, cb) {
         require.ensure([], (require) => {
-          registerModel(app, require('./models/pricer/european'))
-          cb(null, require('./routes/european/'))
-        }, 'european')
+          registerModel(app, require('./models/dashboard'))
+          cb(null, require('./routes/dashboard/'))
+        }, 'dashboard')
       },
       childRoutes: [
         {

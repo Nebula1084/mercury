@@ -8,7 +8,7 @@ const formatJson = (k, v) => {
   return v
 }
 
-function check401 (response) {
+function check401(response) {
   if (response.status === 401) {
     const key = 'Unauthorized'
     return Promise.reject({ key })
@@ -16,7 +16,7 @@ function check401 (response) {
   return response
 }
 
-function checkStatus (response) {
+function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
     return response
   }
@@ -26,7 +26,7 @@ function checkStatus (response) {
   throw error
 }
 
-function jsonParse (res) {
+function jsonParse(res) {
   if (res.status !== 200) {
     return Promise.reject(res)
   }
@@ -50,7 +50,7 @@ function jsonParse (res) {
  * @param  {object} [options]
  * @return {object}
  */
-function request (url, options) {
+function request(url, options) {
   const opts = { ...options }
   opts.credentials = 'include'
   opts.headers = {
@@ -63,7 +63,7 @@ function request (url, options) {
     .then(check401)
     .then(jsonParse)
     .catch((err) => {
-      throw new Error(`${err.message}`, err.message || '错误')
+      throw new Error(`${err.message}`, err.message || 'error')
     })
 }
 
@@ -73,7 +73,7 @@ function request (url, options) {
  * @param data
  * @param options
  */
-function post (url, data = {}, options) {
+function post(url, data = {}, options) {
   return request(url, { ...options, method: 'POST', body: JSON.stringify(data, formatJson) })
 }
 
@@ -82,7 +82,7 @@ function post (url, data = {}, options) {
  * @param url
  * @param options
  */
-function del (url, options) {
+function del(url, options) {
   return request(url, { ...options, method: 'DELETE' })
 }
 
@@ -92,7 +92,7 @@ function del (url, options) {
  * @param data
  * @param options
  */
-function put (url, data = {}, options) {
+function put(url, data = {}, options) {
   return request(url, { ...options, method: 'PUT', body: JSON.stringify(data, formatJson) })
 }
 /**
@@ -101,7 +101,7 @@ function put (url, data = {}, options) {
  * @param data
  * @param options
  */
-function patch (url, data = {}, options) {
+function patch(url, data = {}, options) {
   return request(url, { ...options, method: 'PATCH', body: JSON.stringify(data, formatJson) })
 }
 
@@ -110,7 +110,7 @@ function patch (url, data = {}, options) {
  * @param url
  * @param options
  */
-function get (url, data, options) {
+function get(url, data, options) {
   return request(`${url}${data ? '?' + querystring.stringify(data) : ''}`, { ...options, method: 'GET' })
 }
 
