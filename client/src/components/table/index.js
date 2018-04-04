@@ -1,10 +1,10 @@
 import React from 'react';
-import { connect } from 'dva';
 import { Table, Button, Icon, Row, Col, Form, Popconfirm } from 'antd';
 import ImportButton from './ImportButton'
 import NumericInput from './NumericInput'
 import CsvParse from '@vtex/react-csv-parse';
 import styles from './table.less';
+import { toCamelCase, buildHeaders } from 'utils';
 
 export default class MercuryTable extends React.Component {
 
@@ -13,25 +13,11 @@ export default class MercuryTable extends React.Component {
 
   }
 
-  toCamelCase(str) {
-    let ret = str.replace(' ', '');
-    ret = ret[0].toLowerCase() + ret.slice(1);
-    return ret;
-  }
-
-  buildHeaders(columns) {
-    let headers = []
-    for (let column of columns) {
-      headers.push(this.toCamelCase(column))
-    }
-    return headers;
-  }
-
   buildColumns(columns) {
     let ret = [];
     for (let column of columns) {
       let title = column;
-      let dataIndex = this.toCamelCase(column);
+      let dataIndex = toCamelCase(column);
       let key = dataIndex;
       ret.push({
         title: title,
@@ -85,7 +71,7 @@ export default class MercuryTable extends React.Component {
   }
 
   add = () => {
-    let headers = this.buildHeaders(this.props.columns)
+    let headers = buildHeaders(this.props.columns)
     let data = {}
     for (let header of headers) {
       data[header] = '0'
@@ -121,7 +107,7 @@ export default class MercuryTable extends React.Component {
   }
 
   render() {
-    const headers = this.buildHeaders(this.props.columns);
+    const headers = buildHeaders(this.props.columns);
 
     return (
       <div>

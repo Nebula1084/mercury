@@ -76,6 +76,15 @@ const Routers = function ({ history, app }) {
           }
         },
         {
+          path: 'monitor',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/geometric'))
+              cb(null, require('./routes/monitor/'))
+            }, 'monitor')
+          }
+        },
+        {
           path: 'dashboard',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {

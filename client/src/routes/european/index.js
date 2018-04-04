@@ -1,5 +1,5 @@
 import React from 'react';
-import MercuryTable from "../../components/table";
+import MercuryTable from '../../components/table';
 import { Input, Icon, Row, Col, Button } from 'antd';
 import styles from './european.less';
 import { connect, select } from 'dva';

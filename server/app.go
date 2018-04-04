@@ -63,6 +63,10 @@ func NewApp(opts ...AppOptions) *App {
 		API:    &API{},
 	}
 
+	app.API.Bind(app.Engine.Group(
+		app.Conf.UString("api.prefix"),
+	))
+
 	// Create file http server from bindata
 	fileServerHandler := http.FileServer(&assetfs.AssetFS{
 		Asset:     Asset,

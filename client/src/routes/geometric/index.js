@@ -1,17 +1,19 @@
 import React from 'react';
-import MercuryTable from "../../components/table";
+import MercuryTable from '../../components/table';
+import PricingMonitor from '../../components/monitor'
 import { Input, Icon, Row, Col, Button } from 'antd';
 import { connect, select } from 'dva';
 
 class GeometricPricer extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props);        
         const { dispatch } = this.props;
         this.dispatch = dispatch;
     }
 
     render() {
+
         return (
             <div>
                 <MercuryTable
@@ -24,7 +26,8 @@ class GeometricPricer extends React.Component {
                 />
             </div>
         )
+
     }
 }
 
-export default connect(({ geometric }) => ({ geometric }))(GeometricPricer);
+export default connect(({geometric}) => ({ geometric }))(GeometricPricer);
