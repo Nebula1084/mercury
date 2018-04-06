@@ -7,7 +7,7 @@ INCLUDES  		:= -I/usr/include -I.
 LIBRARIES 		:=
 
 # Debug build flags
-ALL_CCFLAGS :=
+ALL_CCFLAGS := -std=c++11
 ifeq ($(dbg),1)
       ALL_CCFLAGS += -g -G
 endif
@@ -38,7 +38,7 @@ $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
 cpu_test: CpuTest.o option/European.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
-gpu_test: GpuTest.o
+gpu_test: GpuTest.o asian/Asian.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:
