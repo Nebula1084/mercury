@@ -14,6 +14,9 @@ class Volatility
 
   public:
     float calculate();
+    Volatility();
+    Volatility(float,float,Instrument,float);
+  
 } __attribute__((packed));
 
 #endif
