@@ -1,8 +1,14 @@
 #include <asian/Asian.h>
+std::random_device rd;
+
+std::mt19937 gen(rd());
 
 Asian::Asian(std::vector<std::vector<float>> corMatrix)
     : corMatrix(corMatrix)
 {
+    this->basketSize = corMatrix.size();
+    this->choMatrix = cholesky();
+    this->simProdMatrix;
 }
 
 std::vector<std::vector<float>> Asian::cholesky()
@@ -37,4 +43,31 @@ std::vector<std::vector<float>> Asian::cholesky()
     }
 
     return lMatrix;
+}
+
+std::vector<float> Asian::randNormal()
+{
+    std::vector<float> independNormals;
+    std::vector<float> dependNormals;
+
+    for (int i = 0; i < basketSize; i++)
+    {
+        std::normal_distribution<float> normal(0, 1);
+        independNormals.push_back(normal(gen));
+    }
+
+    for (auto &comb : choMatrix)
+    {
+        float corNormal = 0;
+        for (int i = 0; i < basketSize; i++)
+        {
+            corNormal += independNormals[i] * comb[i];
+        }
+        dependNormals.push_back(corNormal);
+    }
+
+    for (int i = 0; i < basketSize; i++)
+    {
+    }
+    return dependNormals;
 }

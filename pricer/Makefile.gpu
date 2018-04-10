@@ -26,10 +26,13 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-%.o:%.cpp
-	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
+# %.o:%.cpp
+# 	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
 
 %.o:%.cu
+	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+%.o:%.cpp
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
