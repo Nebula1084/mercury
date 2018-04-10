@@ -3,8 +3,9 @@
 /pkg
 /src
 /server/bindata.go
-/server/data/static/build
+/server/data
 
 .pid
 .DS_Store
 .idea/
+vendor/

@@ -1,7 +1,7 @@
 dbg				:= 0
 BIN           	:= $(GOPATH)/bin
 CUDA_PATH 		:= /usr/local/cuda
-CC				:= g++
+CC				:= gcc
 NVCC			:= $(CUDA_PATH)/bin/nvcc -ccbin $(CC)
 INCLUDES  		:= -I/usr/include -I.
 LIBRARIES 		:=
@@ -26,16 +26,19 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-%.o:%.cpp
-	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
+# %.o:%.cpp
+# 	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
 
 %.o:%.cu
+	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+%.o:%.cpp
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
-cpu_test: CpuTest.o option/European.o option/Option.o option/Norm.o
+cpu_test: CpuTest.o option/European.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
 gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o
