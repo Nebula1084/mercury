@@ -4,6 +4,7 @@
 #include <american/Binomial.h>
 #include <vector>
 #include <iostream>
+#include <stdio.h>
 #include <cuda_runtime.h>
 
 void print(int dim, double *matrix)
@@ -51,22 +52,59 @@ void corNormal()
 {
     std::cout << "----Correlated Normals-----" << std::endl;
     double corMatrix[9] = {
-        1, 0.5, 0.5,
-        0.5, 1, 0.5,
-        0.5, 0.5, 1};
+        1, 0.8, 0.9,
+        0.8, 1, 0.5,
+        0.9, 0.5, 1};
     Asian asin(3, corMatrix);
     int basketSize = 3;
-    std::vector<float> sum(basketSize);
+    double sum[basketSize] = {0};
+    double sum2[basketSize] = {0};
+    double sumX[basketSize * basketSize] = {0};
     for (int i = 1; i <= 1000000; i++)
     {
-        auto vars = asin.randNormal();
+        double *vars = asin.randNormal();
         for (int j = 0; j < basketSize; j++)
+        {
             sum[j] += vars[j];
-        if (i % 100000 == 0)
+            sum2[j] += vars[j] * vars[j];
+        }
+        for (int j = 0; j < basketSize; j++)
+            for (int k = 0; k < basketSize; k++)
+            {
+                sumX[j * basketSize + k] += vars[j] * vars[k];
+            }
+        if (i % 200000 == 0)
+        {
+            printf("%d\n", i);
+            double mean[basketSize] = {0};
+            double var[basketSize] = {0};
+            double cov[basketSize * basketSize] = {0};
             for (int j = 0; j < basketSize; j++)
             {
-                std::cout << i << ":" << sum[j] / i << std::endl;
+                mean[j] = sum[j] / i;
+                var[j] = sum2[j] / i - mean[j] * mean[j];
+                printf("%d: mean = %f, var = %f\n", j, mean[j], var[j]);
             }
+            printf("covariance matrix:\n");
+            for (int j = 0; j < basketSize; j++)
+            {
+                for (int k = 0; k < basketSize; k++)
+                {
+                    cov[j * basketSize + k] = sumX[j * basketSize + k] / i - mean[j] * mean[k];
+                    printf("%f ", cov[j * basketSize + k]);
+                }
+                printf("\n");
+            }
+            printf("corelation matrix:\n");
+            for (int j = 0; j < basketSize; j++)
+            {
+                for (int k = 0; k < basketSize; k++)
+                {
+                    printf("%f ", cov[j * basketSize + k] / sqrt(var[j] * var[k]));
+                }
+                printf("\n");
+            }
+        }
     }
 }
 
