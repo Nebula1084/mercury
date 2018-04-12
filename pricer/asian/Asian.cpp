@@ -3,71 +3,106 @@ std::random_device rd;
 
 std::mt19937 gen(rd());
 
-Asian::Asian(std::vector<std::vector<float>> corMatrix)
-    : corMatrix(corMatrix)
+Asian::Asian()
 {
-    this->basketSize = corMatrix.size();
-    this->choMatrix = cholesky();
-    this->simProdMatrix;
 }
 
-std::vector<std::vector<float>> Asian::cholesky()
+Asian::Asian(int basketSize, double *corMatrix)
+    : basketSize(basketSize), corMatrix(corMatrix)
 {
-    int n = this->corMatrix.size();
-    std::vector<std::vector<float>> lMatrix;
+    this->choMatrix = cholesky();
+}
 
-    for (int i = 0; i < n; i++)
+double *Asian::cholesky()
+{
+
+    double *lMatrix = new double[basketSize * basketSize];
+
+    for (int i = 0; i < basketSize; i++)
     {
-        lMatrix.push_back(std::vector<float>(n));
         for (int j = 0; j <= i; j++)
         {
-            lMatrix[i][j] = corMatrix[i][j];
+            lMatrix[i * basketSize + j] = corMatrix[i * basketSize + j];
 
             for (int k = 0; k < j; k++)
-            {
-                lMatrix[i][j] -= lMatrix[i][k] * lMatrix[j][k];
-            }
+                lMatrix[i * basketSize + j] -= lMatrix[i * basketSize + k] * lMatrix[j * basketSize + k];
             if (i == j)
-            {
-                lMatrix[i][j] = std::sqrt(lMatrix[i][j]);
-            }
+                lMatrix[i * basketSize + j] = std::sqrt(lMatrix[i * basketSize + j]);
             else
-            {
-                lMatrix[i][j] = lMatrix[i][j] / lMatrix[j][j];
-            }
+                lMatrix[i * basketSize + j] = lMatrix[i * basketSize + j] / lMatrix[j * basketSize + j];
         }
-        for (int j = i + 1; j < n; j++)
+        for (int j = i + 1; j < basketSize; j++)
         {
-            lMatrix[i][j] = 0;
+            lMatrix[i * basketSize + j] = 0;
         }
     }
 
     return lMatrix;
 }
 
-std::vector<float> Asian::randNormal()
+double *Asian::randNormal()
 {
-    std::vector<float> independNormals;
-    std::vector<float> dependNormals;
+    double *independNormals = new double[basketSize];
+    double *dependNormals = new double[basketSize];
 
     for (int i = 0; i < basketSize; i++)
     {
-        std::normal_distribution<float> normal(0, 1);
-        independNormals.push_back(normal(gen));
+        std::normal_distribution<double> normal(0, 1);
+        independNormals[i] = normal(gen);
     }
 
-    for (auto &comb : choMatrix)
+    for (int i = 0; i < basketSize; i++)
     {
-        float corNormal = 0;
-        for (int i = 0; i < basketSize; i++)
+        double corNormal = 0;
+        for (int j = 0; j < basketSize; j++)
         {
-            corNormal += independNormals[i] * comb[i];
+            corNormal += independNormals[j] * choMatrix[i * basketSize + j];
         }
-        dependNormals.push_back(corNormal);
+        dependNormals[i] = corNormal;
     }
 
-    for (int i = 0; i < basketSize; i++)
-    {
-    }
+    delete[] independNormals;
     return dependNormals;
+}
+
+static double endCallValue(double S, double X, double r, double MuByT, double VBySqrtT)
+{
+    double callValue = S * exp(MuByT + VBySqrtT * r) - X;
+    return (callValue > 0) ? callValue : 0;
+}
+
+Asian::Value Asian::monteCarloCPU(int pathN)
+{
+    const double MuByT = (R - 0.5 * V * V) * T;
+    const double VBySqrtT = V * sqrt(T);
+    float *samples;
+    curandGenerator_t cudaGen;
+    unsigned long long seed = 1234ULL;
+
+    curandCreateGeneratorHost(&cudaGen, CURAND_RNG_PSEUDO_DEFAULT);
+    curandSetPseudoRandomGeneratorSeed(cudaGen, seed);
+    samples = new float[pathN];
+    curandGenerateNormal(cudaGen, samples, pathN, 0.0, 1.0);
+
+    double sum = 0, sum2 = 0;
+
+    for (int pos = 0; pos < pathN; pos++)
+    {
+
+        double sample = samples[pos];
+        double callValue = endCallValue(S, X, sample, MuByT, VBySqrtT);
+        sum += callValue;
+        sum2 += callValue * callValue;
+    }
+
+    delete[] samples;
+
+    curandDestroyGenerator(cudaGen);
+
+    Value ret;
+
+    ret.expected = (float)(exp(-R * T) * sum / (double)pathN);
+    double stdDev = sqrt(((double)pathN * sum2 - sum * sum) / ((double)pathN * (double)(pathN - 1)));
+    ret.confidence = (float)(exp(-R * T) * 1.96 * stdDev / sqrt((double)pathN));
+    return ret;
 }

@@ -5,23 +5,36 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <curand.h>
 
 class Asian
 {
-private:
-  std::vector<std::vector<float>> corMatrix;
-  std::vector<std::vector<float>> choMatrix;
-
-  std::vector<std::vector<float>> simProdMatrix;
-  std::vector<float> simSumVector;
-  std::vector<float> simSqrSumVector;
+public:
+  double *corMatrix;
+  double *choMatrix;
 
   int basketSize;
 
-public:
-  Asian(std::vector<std::vector<float>> corMatrix);
-  std::vector<std::vector<float>> cholesky();
-  std::vector<float> randNormal();
+  double S;
+  double X;
+  double T;
+  double R;
+  double V;
+  int pathNum;
+
+  class Value
+  {
+  public:
+    double expected;
+    double confidence;
+  };
+
+  Asian();
+  Asian(int basketSize, double *corMatrix);
+
+  double *cholesky();
+  double *randNormal();
+  Value monteCarloCPU(int pathN);
 };
 
 #endif

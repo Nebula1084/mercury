@@ -73,13 +73,3 @@ float American::binomialOptionsCPU()
 
     return (float)Call[0];
 }
-
-typedef struct
-{
-    float S;
-    float X;
-    float vDt;
-    float puByDf;
-    float pdByDf;
-
-} __TOptionData;

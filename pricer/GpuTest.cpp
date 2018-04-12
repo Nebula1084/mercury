@@ -1,17 +1,18 @@
 #include <asian/Asian.h>
+#include <asian/MonteCarlo.h>
 #include <american/American.h>
 #include <american/Binomial.h>
 #include <vector>
 #include <iostream>
 #include <cuda_runtime.h>
 
-void print(std::vector<std::vector<float>> matrix)
+void print(int dim, double *matrix)
 {
-    for (auto &col : matrix)
+    for (int i = 0; i < dim; i++)
     {
-        for (auto &val : col)
+        for (int j = 0; j < dim; j++)
         {
-            std::cout << val << " ";
+            std::cout << matrix[i * dim + j] << " ";
         }
 
         std::cout << std::endl;
@@ -21,39 +22,39 @@ void print(std::vector<std::vector<float>> matrix)
 void cholesky()
 {
     std::cout << "---------Cholesky-----------" << std::endl;
-    std::vector<std::vector<float>> corMatrix1 = {
-        {4, 12, -16},
-        {12, 37, -43},
-        {-16, -43, 98}};
+    double corMatrix1[9] = {
+        4, 12, -16,
+        12, 37, -43,
+        -16, -43, 98};
 
-    Asian asin1(corMatrix1);
+    Asian asin1(3, corMatrix1);
     auto res = asin1.cholesky();
-    print(res);
+    print(3, res);
     std::cout << "-------------------------" << std::endl;
-    std::vector<std::vector<float>> corMatrix2 = {
-        {1, 0.5},
-        {0.5, 1}};
-    Asian asin2(corMatrix2);
+    double corMatrix2[4] = {
+        1, 0.5,
+        0.5, 1};
+    Asian asin2(2, corMatrix2);
     res = asin2.cholesky();
-    print(res);
+    print(2, res);
     std::cout << "-------------------------" << std::endl;
-    std::vector<std::vector<float>> corMatrix3 = {
-        {1, 0.5, 0.5},
-        {0.5, 1, 0.5},
-        {0.5, 0.5, 1}};
-    Asian asin3(corMatrix3);
+    double corMatrix3[9] = {
+        1, 0.5, 0.5,
+        0.5, 1, 0.5,
+        0.5, 0.5, 1};
+    Asian asin3(3, corMatrix3);
     res = asin3.cholesky();
-    print(res);
+    print(3, res);
 }
 
 void corNormal()
 {
     std::cout << "----Correlated Normals-----" << std::endl;
-    std::vector<std::vector<float>> corMatrix = {
-        {1, 0.5, 0.5},
-        {0.5, 1, 0.5},
-        {0.5, 0.5, 1}};
-    Asian asin(corMatrix);
+    double corMatrix[9] = {
+        1, 0.5, 0.5,
+        0.5, 1, 0.5,
+        0.5, 0.5, 1};
+    Asian asin(3, corMatrix);
     int basketSize = 3;
     std::vector<float> sum(basketSize);
     for (int i = 1; i <= 1000000; i++)
@@ -148,7 +149,51 @@ void binomial()
     printf("Avg. diff: %E\n", (double)(sumDelta / (float)MAX_OPTIONS));
 }
 
+float randFloat(float low, float high)
+{
+    float t = (float)rand() / (float)RAND_MAX;
+    return (1.0f - t) * low + t * high;
+}
+
+void monteCarlo()
+{
+    int PATH_N = 262000;
+    Asian *options = new Asian[MAX_OPTIONS];
+    Asian::Value *callValueCPU = new Asian::Value[MAX_OPTIONS];
+
+    for (int i = 0; i < MAX_OPTIONS; i++)
+    {
+        options[i].S = randFloat(5.0f, 50.0f);
+        options[i].X = randFloat(10.0f, 25.0f);
+        options[i].T = randFloat(1.0f, 5.0f);
+        options[i].R = 0.06f;
+        options[i].V = 0.10f;
+        callValueCPU[i].expected = -1.0f;
+        callValueCPU[i].confidence = -1.0f;
+    }
+
+    float sumDelta = 0;
+    float sumRef = 0;
+
+    for (int i = 0; i < MAX_OPTIONS; i++)
+    {
+
+        callValueCPU[i] = options[i].monteCarloCPU(PATH_N);
+        printf("Exp : %f \t| Conf: %f\n", callValueCPU[i].expected, callValueCPU[i].confidence);
+    }
+    delete[] options;
+    delete[] callValueCPU;
+}
+
+void monteCarloGPU()
+{
+    Asian *option = new Asian();
+    option->pathNum = 100001000;
+    std::cout << monteCarloGPU(option) << std::endl;
+}
+
 int main()
 {
-    binomial();
+    cholesky();
+    corNormal();
 }

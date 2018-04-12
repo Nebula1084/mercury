@@ -1,10 +1,10 @@
 dbg				:= 0
 BIN           	:= $(GOPATH)/bin
 CUDA_PATH 		:= /usr/local/cuda
-CC				:= gcc
+CC				:= g++
 NVCC			:= $(CUDA_PATH)/bin/nvcc -ccbin $(CC)
 INCLUDES  		:= -I/usr/include -I.
-LIBRARIES 		:=
+LIBRARIES 		:= -lcurand
 
 # Debug build flags
 ALL_CCFLAGS := -std=c++11
@@ -41,7 +41,7 @@ $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
 cpu_test: CpuTest.o option/European.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
-gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o
+gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o asian/MonteCarloKernel.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:
