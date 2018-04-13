@@ -1,7 +1,4 @@
 #include <asian/Asian.h>
-std::random_device rd;
-
-std::mt19937 gen(rd());
 
 Asian::Asian()
 {
@@ -40,15 +37,14 @@ double *Asian::cholesky()
     return lMatrix;
 }
 
-double *Asian::randNormal()
+double *Asian::randNormal(curandState *state)
 {
     double *independNormals = new double[basketSize];
     double *dependNormals = new double[basketSize];
 
     for (int i = 0; i < basketSize; i++)
     {
-        std::normal_distribution<double> normal(0, 1);
-        independNormals[i] = normal(gen);
+        independNormals[i] = curand_normal(state);
     }
 
     for (int i = 0; i < basketSize; i++)

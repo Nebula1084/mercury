@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <random>
-#include <curand.h>
+#include <curand_kernel.h>
 
 class Asian
 {
@@ -33,7 +33,7 @@ public:
   Asian(int basketSize, double *corMatrix);
 
   double *cholesky();
-  double *randNormal();
+  double *randNormal(curandState *state);
   Value monteCarloCPU(int pathN);
 };
 

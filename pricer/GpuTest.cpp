@@ -56,13 +56,26 @@ void corNormal()
         0.8, 1, 0.5,
         0.9, 0.5, 1};
     Asian asin(3, corMatrix);
+
     int basketSize = 3;
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
     double sumX[basketSize * basketSize] = {0};
-    for (int i = 1; i <= 1000000; i++)
+    curandState state;
+
+    for (int i = 0; i < basketSize; i++)
     {
-        double *vars = asin.randNormal();
+        for (int j = 0; j < basketSize; j++)
+        {
+            std::cout << asin.choMatrix[i * basketSize + j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    curand_init(1234, 0, 0, &state);
+    for (int i = 1; i <= 10000000; i++)
+    {
+        double *vars = asin.randNormal(&state);
         for (int j = 0; j < basketSize; j++)
         {
             sum[j] += vars[j];
@@ -73,7 +86,7 @@ void corNormal()
             {
                 sumX[j * basketSize + k] += vars[j] * vars[k];
             }
-        if (i % 200000 == 0)
+        if (i % 2000000 == 0)
         {
             printf("%d\n", i);
             double mean[basketSize] = {0};
@@ -195,7 +208,7 @@ float randFloat(float low, float high)
 
 void monteCarlo()
 {
-    int PATH_N = 262000;
+    int PATH_N = 2620;
     Asian *options = new Asian[MAX_OPTIONS];
     Asian::Value *callValueCPU = new Asian::Value[MAX_OPTIONS];
 
@@ -225,13 +238,17 @@ void monteCarlo()
 
 void monteCarloGPU()
 {
-    Asian *option = new Asian();
-    option->pathNum = 100001000;
-    std::cout << monteCarloGPU(option) << std::endl;
+    double corMatrix[9] = {
+        1, 0.8, 0.9,
+        0.8, 1, 0.5,
+        0.9, 0.5, 1};
+    Asian option(3, corMatrix);
+    option.pathNum = 10000000;
+    std::cout << "Result:" << monteCarloGPU(&option) / option.pathNum<< std::endl;
 }
 
 int main()
 {
-    cholesky();
-    corNormal();
+    monteCarloGPU();
+    // corNormal();
 }
