@@ -37,35 +37,40 @@ __global__ void monteCarloOptionKernel(
     double *sum,
     double *sumOutput,
     double *sum2,
-    double *sum2Output)
+    double *sum2Output,
+    double *sumX,
+    double *sumXOutput)
 {
     __shared__ double sumThread[THREAD_N];
-    double sumPerThread = 0;
     curandState state;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int size = asian->basketSize;
     int offset = idx * size;
 
-    curand_init(1234, idx, 0, &state);
+    curand_init(1230, idx, 0, &state);
     for (int i = 0; i < size; i++)
     {
         sum[offset + i] = 0;
         sum2[offset + i] = 0;
+        sumX[offset + i] = 0;
     }
 
     for (int i = idx; i < asian->pathNum; i += blockDim.x * gridDim.x)
     {
-        // randNormal(asian, &state, choMatrix, depend + offset, independ + offset);
+        randNormal(asian, &state, choMatrix, depend + offset, independ + offset);
 
         for (int j = 0; j < size; j++)
         {
-            // double var = depend[offset] + j;
-            double var = 1;
+            double var = depend[offset + j];
             sum[offset + j] += var;
             sum2[offset + j] += var * var;
+            for (int k = 0; k < size; k++)
+            {
+                double val = depend[offset + k];
+                sumX[offset * size + j * size + k] += var * val;
+            }
         }
-        sumPerThread += 1;
-    }    
+    }
 
     for (int i = 0; i < size; i++)
     {
@@ -81,10 +86,19 @@ __global__ void monteCarloOptionKernel(
         {
             sum2Output[blockIdx.x * size + i] = sumThread[0];
         }
+        for (int j = 0; j < size; j++)
+        {
+            sumThread[threadIdx.x] = sumX[offset * size + i * size + j];
+            sumReduce<double, THREAD_N, THREAD_N>(sumThread);
+            if (threadIdx.x == 0)
+            {
+                sumXOutput[blockIdx.x * size * size + i * size + j] = sumThread[0];
+            }
+        }
     }
 }
 
-double monteCarloGPU(Asian *asian)
+double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
 {
     Asian *option;
     double *choMatrix;
@@ -97,8 +111,9 @@ double monteCarloGPU(Asian *asian)
     double *sum2;
     double *sum2Output;
     double *sum2Host;
-    double ret = 0;
-    double ret2 = 0;
+    double *sumX;
+    double *sumXOutput;
+    double *sumXHost;
 
     int size = asian->basketSize;
 
@@ -110,27 +125,62 @@ double monteCarloGPU(Asian *asian)
     cudaMalloc(&independ, sizeof(double) * size * totalThread);
     cudaMalloc(&sum, sizeof(double) * size * totalThread);
     cudaMalloc(&sum2, sizeof(double) * size * totalThread);
+    cudaMalloc(&sumX, sizeof(double) * size * size * totalThread);
 
     cudaMalloc(&sumOutput, sizeof(double) * size * BLOCK_N);
     cudaMalloc(&sum2Output, sizeof(double) * size * BLOCK_N);
+    cudaMalloc(&sumXOutput, sizeof(double) * size * size * BLOCK_N);
+
     cudaMemcpy(option, asian, sizeof(Asian), cudaMemcpyHostToDevice);
     cudaMemcpy(choMatrix, asian->choMatrix, size * size * sizeof(double), cudaMemcpyHostToDevice);
 
-    monteCarloOptionKernel<<<BLOCK_N, THREAD_N>>>(option, choMatrix, depend, independ, sum, sumOutput, sum2, sum2Output);
-    
+    monteCarloOptionKernel<<<BLOCK_N, THREAD_N>>>(
+        option, choMatrix,
+        depend, independ,
+        sum, sumOutput,
+        sum2, sum2Output,
+        sumX, sumXOutput);
+
     cudaMallocHost(&sumHost, sizeof(double) * size * BLOCK_N);
     cudaMallocHost(&sum2Host, sizeof(double) * size * BLOCK_N);
-    cudaMemcpy(sumHost, sumOutput, size *BLOCK_N* sizeof(double), cudaMemcpyDeviceToHost);
-    cudaMemcpy(sum2Host, sum2Output, size * BLOCK_N* sizeof(double), cudaMemcpyDeviceToHost);
-    for (int i=0; i<BLOCK_N; i++){
-        ret += sumHost[i*size];
-        ret2 += sum2Host[i*size];
+    cudaMallocHost(&sumXHost, sizeof(double) * size * size * BLOCK_N);
+    cudaMemcpy(sumHost, sumOutput, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(sum2Host, sum2Output, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(sumXHost, sumXOutput, size * size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < size; i++)
+    {
+        expectation[i] = 0;
+        for (int j = 0; j < size; j++)
+        {
+            covMatrix[i * size + j] = 0;
+        }
+    }
+    for (int i = 0; i < BLOCK_N; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            expectation[j] += sumHost[i * size + j];
+            for (int k = 0; k < size; k++)
+            {
+                covMatrix[j * size + k] += sumXHost[i * size * size + j * size + k];
+            }
+        }
     }
 
-    printf("total:%f\n", ret);
-    double mean = ret / asian->pathNum;
-    
-    printf("%f %f\n", mean, ret2 / asian->pathNum - mean * mean);
+    for (int i = 0; i < size; i++)
+    {
+        expectation[i] /= asian->pathNum;
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            covMatrix[i * size + j] = covMatrix[i * size + j] / asian->pathNum - expectation[i] * expectation[j];
+        }
+    }
+
     cudaFreeHost(sumHost);
     cudaFreeHost(sum2Host);
 
@@ -142,5 +192,6 @@ double monteCarloGPU(Asian *asian)
     cudaFree(sum2);
     cudaFree(sumOutput);
     cudaFree(sum2Output);
+    cudaFree(sumXOutput);
     return 0;
 }

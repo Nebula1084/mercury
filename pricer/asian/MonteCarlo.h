@@ -3,6 +3,6 @@
 
 #include <asian/Asian.h>
 
-double monteCarloGPU(Asian *asian);
+double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix);
 
 #endif

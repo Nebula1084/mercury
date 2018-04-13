@@ -86,7 +86,7 @@ void corNormal()
             {
                 sumX[j * basketSize + k] += vars[j] * vars[k];
             }
-        if (i % 2000000 == 0)
+        if (i % 5000000 == 0)
         {
             printf("%d\n", i);
             double mean[basketSize] = {0};
@@ -242,13 +242,34 @@ void monteCarloGPU()
         1, 0.8, 0.9,
         0.8, 1, 0.5,
         0.9, 0.5, 1};
-    Asian option(3, corMatrix);
+    int basketSize = 3;
+    Asian option(basketSize, corMatrix);
     option.pathNum = 10000000;
-    std::cout << "Result:" << monteCarloGPU(&option) / option.pathNum<< std::endl;
+    double covMatrix[9];
+    double expection[3];
+    std::cout << "Result:" << monteCarloGPU(&option, expection, covMatrix) / option.pathNum << std::endl;
+    printf("covariance matrix:\n");
+    for (int j = 0; j < basketSize; j++)
+    {
+        for (int k = 0; k < basketSize; k++)
+        {
+            printf("%f ", covMatrix[j * basketSize + k]);
+        }
+        printf("\n");
+    }
+    printf("corelation matrix:\n");
+    for (int j = 0; j < basketSize; j++)
+    {
+        for (int k = 0; k < basketSize; k++)
+        {
+            printf("%f ", covMatrix[j * basketSize + k] / sqrt(covMatrix[j * basketSize + j] * covMatrix[k * basketSize + k]));
+        }
+        printf("\n");
+    }
 }
 
 int main()
 {
     monteCarloGPU();
-    // corNormal();
+    corNormal();
 }
