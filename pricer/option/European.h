@@ -7,7 +7,7 @@
 class European
 {
 private:
-  //friend class Volatility;
+  friend class Volatility;
   float interest;
   float repo;
   Instrument instrument;

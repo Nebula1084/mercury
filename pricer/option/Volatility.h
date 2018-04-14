@@ -11,11 +11,12 @@ class Volatility
     float repo;
     Instrument instrument;
     float price;
-
+    Asset asset;     //need the underlying asset price for strike
+    
   public:
     float calculate();
     Volatility();
-    Volatility(float,float,Instrument,float);
+    Volatility(float,float,Instrument,float,float);
   
 } __attribute__((packed));
 
