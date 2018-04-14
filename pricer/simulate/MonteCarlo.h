@@ -6,9 +6,11 @@
 #include <curand_kernel.h>
 #include <cmath>
 
-class Value
+class Result
 {
 public:
+  double arithPayoff;
+  double geoPayoff;
   double expected;
   double confidence;
 };
@@ -36,9 +38,10 @@ public:
 
   double *cholesky();
   void randNormal(curandState *state, double *dependNormals);
+  double optionValue(double value);
 
-  Value simulateCPU(double *expectation, double *covMatrix);
-  Value simulateGPU(double *expectation, double *covMatrix);
+  Result simulateCPU(double *expectation, double *covMatrix);
+  Result simulateGPU(double *expectation, double *covMatrix);
 };
 
 #endif

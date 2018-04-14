@@ -40,7 +40,8 @@ __device__ void sumRdx(double *s, double *d, double value)
     }
 }
 
-__device__ double optionValue(MonteCarlo *plan, double value){
+__device__ double optionValue(MonteCarlo *plan, double value)
+{
     return exp(-plan->interest * plan->maturity) * (value > 0 ? value : 0);
 }
 
@@ -59,7 +60,8 @@ __global__ void monteCarloOptionKernel(
     double *sum2Output,
     double *sumX,
     double *sumXOutput,
-    double *pay,
+    double *payArith,
+    double *payGeo,
     double *pay2)
 {
     __shared__ double sumThread[THREAD_N];
@@ -68,8 +70,10 @@ __global__ void monteCarloOptionKernel(
     int size = plan->basketSize;
     int offset = idx * size;
     double dt = 1. / plan->observation;
-    double payoff = 0;
-    double payPerThread = 0;
+    double arithPayoff = 0;
+    double geoPayoff = 0;
+    double payArithPerThread = 0;
+    double payGeoPerThread = 0;
     double pay2PerThread = 0;
 
     curand_init(1230, idx, 0, &state);
@@ -79,10 +83,9 @@ __global__ void monteCarloOptionKernel(
         sum2[offset + i] = 0;
         sumX[offset + i] = 0;
     }
-    
+
     for (int i = idx; i < plan->pathNum; i += blockDim.x * gridDim.x)
     {
-        double mean = 0;
         double arithMean = 0;
         double geoMean = 1;
 
@@ -108,25 +111,31 @@ __global__ void monteCarloOptionKernel(
             {
                 double growthFactor = drift[k] * exp(volatility[k] * sqrt(dt) * depend[offset + k]);
                 currents[offset + k] *= growthFactor;
-                mean += currents[offset + k];
                 arithMean += currents[offset + k];
                 geoMean *= currents[offset + k];
             }
         }
 
-        mean /= plan->observation * size;
         arithMean /= plan->observation * size;
         geoMean = pow(geoMean, 1 / (double)(plan->observation * size));
         if (plan->type == CALL)
-            payoff = optionValue(plan, mean - plan->strike);
+        {
+            arithPayoff = optionValue(plan, arithMean - plan->strike);
+            geoPayoff = optionValue(plan, geoMean - plan->strike);
+        }
         else if (plan->type == PUT)
-            payoff = optionValue(plan, plan->strike - mean);
+        {
+            arithPayoff = optionValue(plan, plan->strike - arithMean);
+            geoPayoff = optionValue(plan, plan->strike - geoMean);
+        }
 
-        payPerThread += payoff;
-        pay2PerThread += payoff * payoff;
+        payArithPerThread += arithPayoff;
+        payGeoPerThread += geoPayoff;
+        pay2PerThread += arithPayoff * arithPayoff;
     }
 
-    sumRdx(sumThread, &pay[blockIdx.x], payPerThread);
+    sumRdx(sumThread, &payArith[blockIdx.x], payArithPerThread);
+    sumRdx(sumThread, &payGeo[blockIdx.x], payGeoPerThread);
     sumRdx(sumThread, &pay2[blockIdx.x], pay2PerThread);
 
     for (int i = 0; i < size; i++)
@@ -141,8 +150,8 @@ __global__ void monteCarloOptionKernel(
     }
 }
 
-Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
-{    
+Result MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
+{
     MonteCarlo *plan;
     double *pChoMatrix;
     double *pPrice;
@@ -162,11 +171,13 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
     double *sumXOutput;
     double *sumXHost;
 
-    double *pay;
-    double *payHost;
+    double *payArith;
+    double *payArithHost;
+    double *payGeo;
+    double *payGeoHost;
     double *pay2;
     double *pay2Host;
-    
+
     int size = this->basketSize;
 
     cudaMalloc(&plan, sizeof(MonteCarlo));
@@ -184,7 +195,8 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
     cudaMalloc(&sum2, sizeof(double) * size * totalThread);
     cudaMalloc(&sumX, sizeof(double) * size * size * totalThread);
 
-    cudaMalloc(&pay, sizeof(double) * BLOCK_N);
+    cudaMalloc(&payArith, sizeof(double) * BLOCK_N);
+    cudaMalloc(&payGeo, sizeof(double) * BLOCK_N);
     cudaMalloc(&pay2, sizeof(double) * BLOCK_N);
     cudaMalloc(&sumOutput, sizeof(double) * size * BLOCK_N);
     cudaMalloc(&sum2Output, sizeof(double) * size * BLOCK_N);
@@ -204,20 +216,23 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
         sum, sumOutput,
         sum2, sum2Output,
         sumX, sumXOutput,
-        pay, pay2);
+        payArith, payGeo, pay2);
 
-    cudaMallocHost(&payHost, sizeof(double) * BLOCK_N);
+    cudaMallocHost(&payArithHost, sizeof(double) * BLOCK_N);
+    cudaMallocHost(&payGeoHost, sizeof(double) * BLOCK_N);
     cudaMallocHost(&pay2Host, sizeof(double) * BLOCK_N);
     cudaMallocHost(&sumHost, sizeof(double) * size * BLOCK_N);
     cudaMallocHost(&sum2Host, sizeof(double) * size * BLOCK_N);
     cudaMallocHost(&sumXHost, sizeof(double) * size * size * BLOCK_N);
-    cudaMemcpy(payHost, pay, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(payArithHost, payArith, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(payGeoHost, payGeo, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(pay2Host, pay2, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sumHost, sumOutput, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sum2Host, sum2Output, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sumXHost, sumXOutput, size * size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
 
-    double payRet = 0;
+    double payArithRet = 0;
+    double payGeoRet = 0;
     double pay2Ret = 0;
 
     for (int i = 0; i < size; i++)
@@ -230,7 +245,8 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
     }
     for (int i = 0; i < BLOCK_N; i++)
     {
-        payRet += payHost[i];
+        payArithRet += payArithHost[i];
+        payGeoRet += payGeoHost[i];
         pay2Ret += pay2Host[i];
         for (int j = 0; j < size; j++)
         {
@@ -242,10 +258,10 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
         }
     }
 
-    int pathNum=this->pathNum;
+    int pathNum = this->pathNum;
 
     for (int i = 0; i < size; i++)
-    {        
+    {
         expectation[i] /= pathNum;
     }
 
@@ -257,15 +273,18 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
         }
     }
 
-    Value ret;
+    Result ret;
 
-    ret.expected = payRet / (double)pathNum;
-    double stdDev = sqrt(((double)pathNum * pay2Ret - payRet * payRet) / ((double)pathNum * (double)(pathNum - 1)));
+    ret.expected = payArithRet / (double)pathNum;
+    ret.arithPayoff = payArithRet / (double)pathNum;
+    ret.geoPayoff = payGeoRet / (double)pathNum;
+    double stdDev = sqrt(((double)pathNum * pay2Ret - payArithRet * payArithRet) / ((double)pathNum * (double)(pathNum - 1)));
     ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
 
     cudaFreeHost(sumHost);
     cudaFreeHost(sum2Host);
-    cudaFreeHost(payHost);
+    cudaFreeHost(payArithHost);
+    cudaFreeHost(payGeoHost);
     cudaFreeHost(pay2Host);
 
     cudaFree(plan);
@@ -273,7 +292,7 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
     cudaFree(pPrice);
     cudaFree(pVolatility);
     cudaFree(pDrift);
-    
+
     cudaFree(currents);
     cudaFree(depend);
     cudaFree(independ);
@@ -282,7 +301,8 @@ Value MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
     cudaFree(sumOutput);
     cudaFree(sum2Output);
     cudaFree(sumXOutput);
-    cudaFree(pay);
+    cudaFree(payArith);
+    cudaFree(payGeo);
     cudaFree(pay2);
     return ret;
 }

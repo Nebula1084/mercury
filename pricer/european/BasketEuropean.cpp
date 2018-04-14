@@ -13,6 +13,11 @@ BasketEuropean::BasketEuropean(int basketSize, double interest, double repo, Ins
 
 BasketEuropean::BasketEuropean(const BasketEuropean &c)
 {
+    this->basketSize = c.basketSize;
+    this->interest = c.interest;
+    this->repo = c.repo;
+    this->instrument = c.instrument;
+
     this->asset = new Asset[basketSize];
     for (int i = 0; i < basketSize; i++)
         this->asset[i] = c.asset[i];

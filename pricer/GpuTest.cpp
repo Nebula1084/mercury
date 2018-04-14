@@ -231,30 +231,15 @@ void monteCarlo()
 
         double covMatrix[9];
         double expection[3];
-        Value callValueCPU = option.simulateCPU(expection, covMatrix);
+        Result callValueCPU = option.simulateCPU(expection, covMatrix);
         printf("Exp : %f \t| Conf: %f\n", callValueCPU.expected, callValueCPU.confidence);
     }
 }
 
-void monteCarloGPU()
+void printResult(int basketSize, Result &result, double *covMatrix, double *expection)
 {
-    
-    double corMatrix[9] = {
-        1, 0.8, 0.9,
-        0.8, 1, 0.5,
-        0.9, 0.5, 1};
-    int basketSize = 3;
-    double prices[basketSize] = {5, 5, 5};
-    double volatility[basketSize] = {0.25, 0.3, 0.1};
-    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, PUT);
-    option.price = prices;
-    option.strike = 4;
-    option.maturity = 1;
-    option.pathNum = 1000000;
-    double covMatrix[9];
-    double expection[3];
-    Value callValueGPU = option.simulateGPU(expection, covMatrix);
-    printf("Exp : %f \t| Conf: %f\n", callValueGPU.expected, callValueGPU.confidence);
+    printf("Exp : %f \t| Conf: %f\n", result.expected, result.confidence);
+    printf("Exp : %f \t| Conf: %f\n", result.geoPayoff, result.confidence);
     printf("covariance matrix:\n");
     for (int j = 0; j < basketSize; j++)
     {
@@ -273,6 +258,29 @@ void monteCarloGPU()
         }
         printf("\n");
     }
+}
+
+void monteCarloGPU()
+{
+
+    double corMatrix[9] = {
+        1, 0.8, 0.9,
+        0.8, 1, 0.5,
+        0.9, 0.5, 1};
+    int basketSize = 3;
+    double prices[basketSize] = {5, 5, 5};
+    double volatility[basketSize] = {0.25, 0.3, 0.1};
+    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, CALL);
+    option.price = prices;
+    option.strike = 4;
+    option.maturity = 1;
+    option.pathNum = 100000;
+    double covMatrix[9];
+    double expection[3];
+    Result result = option.simulateGPU(expection, covMatrix);
+    printResult(basketSize, result, covMatrix, expection);
+    result = option.simulateCPU(expection, covMatrix);
+    printResult(basketSize, result, covMatrix, expection);
 }
 
 int main()

@@ -64,22 +64,28 @@ void MonteCarlo::randNormal(curandState *state, double *dependNormals)
     delete[] independNormals;
 }
 
-Value MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
+double MonteCarlo::optionValue(double value)
 {
-    double sum = 0, sum2 = 0;
+    return exp(-interest * maturity) * (value > 0 ? value : 0);
+}
+
+Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
+{
+    double sum2 = 0, payArith = 0, payGeo = 0;
     double *normals = new double[basketSize];
     double *currents = new double[basketSize];
 
     curandState state;
     curand_init(2230, 0, 0, &state);
-    double mean;
 
     double dt = 1. / observation;
-    double payoff;
+    double arithPayoff = 0;
+    double geoPayoff = 0;
 
     for (int i = 0; i < pathNum; i++)
     {
-        mean = 0;
+        double arithMean = 0;
+        double geoMean = 1;
         for (int j = 0; j < basketSize; j++)
         {
             currents[j] = price[j];
@@ -91,23 +97,36 @@ Value MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
             {
                 double growthFactor = drift[k] * exp(volatility[k] * sqrt(dt) * normals[k]);
                 currents[k] *= growthFactor;
-                mean += currents[k];
+                arithMean += currents[k];
+                geoMean *= currents[k];
             }
         }
 
-        mean /= observation * basketSize;
-        payoff = exp(-interest * maturity) * (mean - strike > 0 ? mean - strike : 0);
-
-        sum += payoff;
-        sum2 += payoff * payoff;
+        arithMean /= observation * basketSize;
+        geoMean = std::pow(geoMean, 1 / (double)(observation * basketSize));
+        if (this->type == CALL)
+        {
+            arithPayoff = optionValue(arithMean - strike);
+            geoPayoff = optionValue(geoMean - strike);
+        }
+        else if (this->type == PUT)
+        {
+            arithPayoff = optionValue(strike - arithMean);
+            geoPayoff = optionValue(strike - geoMean);
+        }
+        payArith += arithPayoff;
+        payGeo += geoPayoff;
+        sum2 += arithPayoff * arithPayoff;
     }
 
     delete[] normals;
     delete[] currents;
-    Value ret;
+    Result ret;
 
-    ret.expected = sum / (double)pathNum;
-    double stdDev = sqrt(((double)pathNum * sum2 - sum * sum) / ((double)pathNum * (double)(pathNum - 1)));
+    ret.expected = payArith / (double)pathNum;
+    ret.arithPayoff = payArith / (double)pathNum;
+    ret.geoPayoff = payGeo / (double)pathNum;
+    double stdDev = sqrt(((double)pathNum * sum2 - payArith * payArith) / ((double)pathNum * (double)(pathNum - 1)));
     ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
     return ret;
 }
