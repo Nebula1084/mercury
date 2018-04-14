@@ -1,7 +1,9 @@
 #include <simulate/MonteCarlo.h>
 
-MonteCarlo::MonteCarlo(int basketSize, double *corMatrix, double *volatility, double interest, int observation)
-    : basketSize(basketSize), corMatrix(corMatrix), volatility(volatility), interest(interest), observation(observation)
+MonteCarlo::MonteCarlo(int basketSize, double *corMatrix, double *volatility,
+                       double interest, int observation, OptionType type)
+    : basketSize(basketSize), corMatrix(corMatrix), volatility(volatility), interest(interest),
+      observation(observation), type(type)
 {
     this->choMatrix = cholesky();
     this->drift = new double[basketSize];

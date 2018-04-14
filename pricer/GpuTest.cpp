@@ -30,14 +30,14 @@ void cholesky()
         12, 37, -43,
         -16, -43, 98};
 
-    MonteCarlo asin1(3, corMatrix1, volatility, 0.3, 1);
+    MonteCarlo asin1(3, corMatrix1, volatility, 0.3, 1, CALL);
     auto res = asin1.cholesky();
     print(3, res);
     std::cout << "-------------------------" << std::endl;
     double corMatrix2[4] = {
         1, 0.5,
         0.5, 1};
-    MonteCarlo asin2(2, corMatrix2, volatility, 0.3, 10);
+    MonteCarlo asin2(2, corMatrix2, volatility, 0.3, 10, CALL);
     res = asin2.cholesky();
     print(2, res);
     std::cout << "-------------------------" << std::endl;
@@ -45,7 +45,7 @@ void cholesky()
         1, 0.5, 0.5,
         0.5, 1, 0.5,
         0.5, 0.5, 1};
-    MonteCarlo asin3(3, corMatrix3, volatility, 0.1, 10);
+    MonteCarlo asin3(3, corMatrix3, volatility, 0.1, 10, CALL);
     res = asin3.cholesky();
     print(3, res);
 }
@@ -59,7 +59,7 @@ void corNormal()
         0.8, 1, 0.5,
         0.9, 0.5, 1};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    MonteCarlo asin(3, corMatrix, volatility, 0.3, 10);
+    MonteCarlo asin(3, corMatrix, volatility, 0.3, 10, CALL);
 
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
@@ -223,7 +223,7 @@ void monteCarlo()
 
     for (int i = 0; i < num; i++)
     {
-        MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100);
+        MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, CALL);
         option.price = prices;
         option.strike = 4;
         option.maturity = 1;
@@ -246,7 +246,7 @@ void monteCarloGPU()
     int basketSize = 3;
     double prices[basketSize] = {5, 5, 5};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100);
+    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, PUT);
     option.price = prices;
     option.strike = 4;
     option.maturity = 1;

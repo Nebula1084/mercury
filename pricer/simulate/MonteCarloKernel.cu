@@ -40,6 +40,10 @@ __device__ void sumRdx(double *s, double *d, double value)
     }
 }
 
+__device__ double optionValue(MonteCarlo *plan, double value){
+    return exp(-plan->interest * plan->maturity) * (value > 0 ? value : 0);
+}
+
 __global__ void monteCarloOptionKernel(
     MonteCarlo *plan,
     double *choMatrix,
@@ -79,6 +83,9 @@ __global__ void monteCarloOptionKernel(
     for (int i = idx; i < plan->pathNum; i += blockDim.x * gridDim.x)
     {
         double mean = 0;
+        double arithMean = 0;
+        double geoMean = 1;
+
         for (int j = 0; j < size; j++)
         {
             currents[offset + j] = price[j];
@@ -102,11 +109,18 @@ __global__ void monteCarloOptionKernel(
                 double growthFactor = drift[k] * exp(volatility[k] * sqrt(dt) * depend[offset + k]);
                 currents[offset + k] *= growthFactor;
                 mean += currents[offset + k];
+                arithMean += currents[offset + k];
+                geoMean *= currents[offset + k];
             }
         }
 
         mean /= plan->observation * size;
-        payoff = exp(-plan->interest * plan->maturity) * (mean - plan->strike > 0 ? mean - plan->strike : 0);
+        arithMean /= plan->observation * size;
+        geoMean = pow(geoMean, 1 / (double)(plan->observation * size));
+        if (plan->type == CALL)
+            payoff = optionValue(plan, mean - plan->strike);
+        else if (plan->type == PUT)
+            payoff = optionValue(plan, plan->strike - mean);
 
         payPerThread += payoff;
         pay2PerThread += payoff * payoff;
