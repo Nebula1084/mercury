@@ -29,9 +29,23 @@ __device__ void randNormal(
     }
 }
 
+__device__ void sumRdx(double *s, double *d, double value)
+{
+    s[threadIdx.x] = value;
+    sumReduce<double, THREAD_N, THREAD_N>(s);
+    if (threadIdx.x == 0)
+    {
+        *d = s[0];
+    }
+}
+
 __global__ void monteCarloOptionKernel(
     Asian *asian,
     double *choMatrix,
+    double *price,
+    double *volatility,
+    double *drift,
+    double *currents,
     double *depend,
     double *independ,
     double *sum,
@@ -39,13 +53,19 @@ __global__ void monteCarloOptionKernel(
     double *sum2,
     double *sum2Output,
     double *sumX,
-    double *sumXOutput)
+    double *sumXOutput,
+    double *pay,
+    double *pay2)
 {
     __shared__ double sumThread[THREAD_N];
     curandState state;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int size = asian->basketSize;
     int offset = idx * size;
+    double dt = 1. / asian->observation;
+    double payoff = 0;
+    double payPerThread = 0;
+    double pay2PerThread = 0;
 
     curand_init(1230, idx, 0, &state);
     for (int i = 0; i < size; i++)
@@ -57,51 +77,65 @@ __global__ void monteCarloOptionKernel(
 
     for (int i = idx; i < asian->pathNum; i += blockDim.x * gridDim.x)
     {
-        randNormal(asian, &state, choMatrix, depend + offset, independ + offset);
 
+        double mean = 0;
         for (int j = 0; j < size; j++)
         {
-            double var = depend[offset + j];
-            sum[offset + j] += var;
-            sum2[offset + j] += var * var;
+            currents[offset + j] = price[j];
+        }
+        for (int j = 0; j < asian->observation; j++)
+        {
+            randNormal(asian, &state, choMatrix, depend + offset, independ + offset);
+            for (int j = 0; j < size; j++)
+            {
+                double var = depend[offset + j];
+                sum[offset + j] += var;
+                sum2[offset + j] += var * var;
+                for (int k = 0; k < size; k++)
+                {
+                    double val = depend[offset + k];
+                    sumX[offset * size + j * size + k] += var * val;
+                }
+            }
             for (int k = 0; k < size; k++)
             {
-                double val = depend[offset + k];
-                sumX[offset * size + j * size + k] += var * val;
+                double growthFactor = drift[k] * exp(volatility[k] * sqrt(dt) * depend[offset + k]);
+                currents[offset + k] *= growthFactor;
+                mean += currents[offset + k];
             }
         }
+
+        mean /= asian->observation * size;
+        payoff = exp(-asian->interest * asian->maturity) * (mean - asian->strike > 0 ? mean - asian->strike : 0);
+
+        payPerThread += payoff;
+        pay2PerThread += payoff * payoff;
     }
+
+    sumRdx(sumThread, &pay[blockIdx.x], payPerThread);
+    sumRdx(sumThread, &pay2[blockIdx.x], pay2PerThread);
 
     for (int i = 0; i < size; i++)
     {
-        sumThread[threadIdx.x] = sum[offset + i];
-        sumReduce<double, THREAD_N, THREAD_N>(sumThread);
-        if (threadIdx.x == 0)
-        {
-            sumOutput[blockIdx.x * size + i] = sumThread[0];
-        }
-        sumThread[threadIdx.x] = sum2[offset + i];
-        sumReduce<double, THREAD_N, THREAD_N>(sumThread);
-        if (threadIdx.x == 0)
-        {
-            sum2Output[blockIdx.x * size + i] = sumThread[0];
-        }
+        sumRdx(sumThread, &sumOutput[blockIdx.x * size + i], sum[offset + i]);
+        sumRdx(sumThread, &sum2Output[blockIdx.x * size + i], sum2[offset + i]);
+
         for (int j = 0; j < size; j++)
         {
-            sumThread[threadIdx.x] = sumX[offset * size + i * size + j];
-            sumReduce<double, THREAD_N, THREAD_N>(sumThread);
-            if (threadIdx.x == 0)
-            {
-                sumXOutput[blockIdx.x * size * size + i * size + j] = sumThread[0];
-            }
+            sumRdx(sumThread, &sumXOutput[blockIdx.x * size * size + i * size + j], sumX[offset * size + i * size + j]);
         }
     }
 }
 
-double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
+Asian::Value monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
 {
     Asian *option;
     double *choMatrix;
+    double *price;
+    double *volatility;
+
+    double *drift;
+    double *currents;
 
     double *depend;
     double *independ;
@@ -115,38 +149,64 @@ double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
     double *sumXOutput;
     double *sumXHost;
 
+    double *pay;
+    double *payHost;
+    double *pay2;
+    double *pay2Host;
+
     int size = asian->basketSize;
 
     cudaMalloc(&option, sizeof(Asian));
     cudaMalloc(&choMatrix, size * size * sizeof(double));
+    cudaMalloc(&price, size * sizeof(double));
+    cudaMalloc(&volatility, size * sizeof(double));
+    cudaMalloc(&drift, size * sizeof(double));
 
     int totalThread = BLOCK_N * THREAD_N;
+
+    cudaMalloc(&currents, sizeof(double) * size * totalThread);
+
     cudaMalloc(&depend, sizeof(double) * size * totalThread);
     cudaMalloc(&independ, sizeof(double) * size * totalThread);
     cudaMalloc(&sum, sizeof(double) * size * totalThread);
     cudaMalloc(&sum2, sizeof(double) * size * totalThread);
     cudaMalloc(&sumX, sizeof(double) * size * size * totalThread);
 
+    cudaMalloc(&pay, sizeof(double) * BLOCK_N);
+    cudaMalloc(&pay2, sizeof(double) * BLOCK_N);
     cudaMalloc(&sumOutput, sizeof(double) * size * BLOCK_N);
     cudaMalloc(&sum2Output, sizeof(double) * size * BLOCK_N);
     cudaMalloc(&sumXOutput, sizeof(double) * size * size * BLOCK_N);
 
     cudaMemcpy(option, asian, sizeof(Asian), cudaMemcpyHostToDevice);
     cudaMemcpy(choMatrix, asian->choMatrix, size * size * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(price, asian->price, size * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(volatility, asian->volatility, size * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(drift, asian->drift, size * sizeof(double), cudaMemcpyHostToDevice);
 
     monteCarloOptionKernel<<<BLOCK_N, THREAD_N>>>(
         option, choMatrix,
+        price, volatility,
+        drift, currents,
         depend, independ,
         sum, sumOutput,
         sum2, sum2Output,
-        sumX, sumXOutput);
+        sumX, sumXOutput,
+        pay, pay2);
 
+    cudaMallocHost(&payHost, sizeof(double) * BLOCK_N);
+    cudaMallocHost(&pay2Host, sizeof(double) * BLOCK_N);
     cudaMallocHost(&sumHost, sizeof(double) * size * BLOCK_N);
     cudaMallocHost(&sum2Host, sizeof(double) * size * BLOCK_N);
     cudaMallocHost(&sumXHost, sizeof(double) * size * size * BLOCK_N);
+    cudaMemcpy(payHost, pay, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(pay2Host, pay2, BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sumHost, sumOutput, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sum2Host, sum2Output, size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(sumXHost, sumXOutput, size * size * BLOCK_N * sizeof(double), cudaMemcpyDeviceToHost);
+
+    double payRet = 0;
+    double pay2Ret = 0;
 
     for (int i = 0; i < size; i++)
     {
@@ -158,6 +218,8 @@ double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
     }
     for (int i = 0; i < BLOCK_N; i++)
     {
+        payRet += payHost[i];
+        pay2Ret += pay2Host[i];
         for (int j = 0; j < size; j++)
         {
             expectation[j] += sumHost[i * size + j];
@@ -181,11 +243,25 @@ double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
         }
     }
 
+    Asian::Value ret;
+
+    ret.expected = payRet / (double)asian->pathNum;
+    double stdDev = sqrt(((double)asian->pathNum * pay2Ret - payRet * payRet) / ((double)asian->pathNum * (double)(asian->pathNum - 1)));
+    ret.confidence = (float)(1.96 * stdDev / sqrt((double)asian->pathNum));
+
     cudaFreeHost(sumHost);
     cudaFreeHost(sum2Host);
+    cudaFreeHost(payHost);
+    cudaFreeHost(pay2Host);
 
+    cudaFree(option);
     cudaFree(choMatrix);
-    cudaFree(asian);
+    cudaFree(price);
+    cudaFree(volatility);
+
+    cudaFree(drift);
+    cudaFree(currents);
+
     cudaFree(depend);
     cudaFree(independ);
     cudaFree(sum);
@@ -193,5 +269,7 @@ double monteCarloGPU(Asian *asian, double *expectation, double *covMatrix)
     cudaFree(sumOutput);
     cudaFree(sum2Output);
     cudaFree(sumXOutput);
-    return 0;
+    cudaFree(pay);
+    cudaFree(pay2);
+    return ret;
 }

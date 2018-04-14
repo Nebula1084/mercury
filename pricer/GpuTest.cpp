@@ -22,20 +22,22 @@ void print(int dim, double *matrix)
 
 void cholesky()
 {
+    int basketSize = 3;
+    double volatility[basketSize] = {0.25, 0.3, 0.1};
     std::cout << "---------Cholesky-----------" << std::endl;
     double corMatrix1[9] = {
         4, 12, -16,
         12, 37, -43,
         -16, -43, 98};
 
-    Asian asin1(3, corMatrix1);
+    Asian asin1(3, corMatrix1, volatility, 0.3, 1);
     auto res = asin1.cholesky();
     print(3, res);
     std::cout << "-------------------------" << std::endl;
     double corMatrix2[4] = {
         1, 0.5,
         0.5, 1};
-    Asian asin2(2, corMatrix2);
+    Asian asin2(2, corMatrix2, volatility, 0.3, 10);
     res = asin2.cholesky();
     print(2, res);
     std::cout << "-------------------------" << std::endl;
@@ -43,21 +45,22 @@ void cholesky()
         1, 0.5, 0.5,
         0.5, 1, 0.5,
         0.5, 0.5, 1};
-    Asian asin3(3, corMatrix3);
+    Asian asin3(3, corMatrix3, volatility, 0.1, 10);
     res = asin3.cholesky();
     print(3, res);
 }
 
 void corNormal()
 {
+    int basketSize = 3;
     std::cout << "----Correlated Normals-----" << std::endl;
     double corMatrix[9] = {
         1, 0.8, 0.9,
         0.8, 1, 0.5,
         0.9, 0.5, 1};
-    Asian asin(3, corMatrix);
+    double volatility[basketSize] = {0.25, 0.3, 0.1};
+    Asian asin(3, corMatrix, volatility, 0.3, 10);
 
-    int basketSize = 3;
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
     double sumX[basketSize * basketSize] = {0};
@@ -73,9 +76,10 @@ void corNormal()
     }
 
     curand_init(1234, 0, 0, &state);
+    double *vars = new double[basketSize];
     for (int i = 1; i <= 10000000; i++)
     {
-        double *vars = asin.randNormal(&state);
+        asin.randNormal(&state, vars);
         for (int j = 0; j < basketSize; j++)
         {
             sum[j] += vars[j];
@@ -209,31 +213,25 @@ float randFloat(float low, float high)
 void monteCarlo()
 {
     int PATH_N = 2620;
-    Asian *options = new Asian[MAX_OPTIONS];
-    Asian::Value *callValueCPU = new Asian::Value[MAX_OPTIONS];
+    int num = 1;
+    int basketSize = 2;
+    double prices[basketSize] = {5, 5};
+    double volatility[basketSize] = {0.25, 0.3};
+    double corMatrix[basketSize * basketSize] =
+        {1, 0.5,
+         0.5, 1};
 
-    for (int i = 0; i < MAX_OPTIONS; i++)
+    for (int i = 0; i < num; i++)
     {
-        options[i].S = randFloat(5.0f, 50.0f);
-        options[i].X = randFloat(10.0f, 25.0f);
-        options[i].T = randFloat(1.0f, 5.0f);
-        options[i].R = 0.06f;
-        options[i].V = 0.10f;
-        callValueCPU[i].expected = -1.0f;
-        callValueCPU[i].confidence = -1.0f;
+        Asian option(basketSize, corMatrix, volatility, 0.03, 100);
+        option.price = prices;
+        option.strike = 4;
+        option.maturity = 1;
+        option.pathNum = 1e5;
+
+        Asian::Value callValueCPU = option.monteCarloCPU();
+        printf("Exp : %f \t| Conf: %f\n", callValueCPU.expected, callValueCPU.confidence);
     }
-
-    float sumDelta = 0;
-    float sumRef = 0;
-
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-
-        callValueCPU[i] = options[i].monteCarloCPU(PATH_N);
-        printf("Exp : %f \t| Conf: %f\n", callValueCPU[i].expected, callValueCPU[i].confidence);
-    }
-    delete[] options;
-    delete[] callValueCPU;
 }
 
 void monteCarloGPU()
@@ -243,11 +241,17 @@ void monteCarloGPU()
         0.8, 1, 0.5,
         0.9, 0.5, 1};
     int basketSize = 3;
-    Asian option(basketSize, corMatrix);
+    double prices[basketSize] = {5, 5, 5};
+    double volatility[basketSize] = {0.25, 0.3, 0.1};
+    Asian option(basketSize, corMatrix, volatility, 0.03, 100);
+    option.price = prices;
+    option.strike = 4;
+    option.maturity = 1;
     option.pathNum = 10000000;
     double covMatrix[9];
     double expection[3];
-    std::cout << "Result:" << monteCarloGPU(&option, expection, covMatrix) / option.pathNum << std::endl;
+    Asian::Value callValueGPU = monteCarloGPU(&option, expection, covMatrix);
+    printf("Exp : %f \t| Conf: %f\n", callValueGPU.expected, callValueGPU.confidence);
     printf("covariance matrix:\n");
     for (int j = 0; j < basketSize; j++)
     {
@@ -271,5 +275,6 @@ void monteCarloGPU()
 int main()
 {
     monteCarloGPU();
-    corNormal();
+    // corNormal();
+    // monteCarlo();
 }

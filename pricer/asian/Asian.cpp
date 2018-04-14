@@ -4,10 +4,17 @@ Asian::Asian()
 {
 }
 
-Asian::Asian(int basketSize, double *corMatrix)
-    : basketSize(basketSize), corMatrix(corMatrix)
+Asian::Asian(int basketSize, double *corMatrix, double *volatility, double interest, int observation)
+    : basketSize(basketSize), corMatrix(corMatrix), volatility(volatility), interest(interest), observation(observation)
 {
     this->choMatrix = cholesky();
+    this->drift = new double[basketSize];
+
+    double dt = 1. / observation;
+    for (int i = 0; i < basketSize; i++)
+    {
+        this->drift[i] = exp((interest - 0.5 * volatility[i] * volatility[i]) * dt);
+    }
 }
 
 double *Asian::cholesky()
@@ -37,10 +44,9 @@ double *Asian::cholesky()
     return lMatrix;
 }
 
-double *Asian::randNormal(curandState *state)
+void Asian::randNormal(curandState *state, double *dependNormals)
 {
     double *independNormals = new double[basketSize];
-    double *dependNormals = new double[basketSize];
 
     for (int i = 0; i < basketSize; i++)
     {
@@ -58,7 +64,6 @@ double *Asian::randNormal(curandState *state)
     }
 
     delete[] independNormals;
-    return dependNormals;
 }
 
 static double endCallValue(double S, double X, double r, double MuByT, double VBySqrtT)
@@ -67,38 +72,51 @@ static double endCallValue(double S, double X, double r, double MuByT, double VB
     return (callValue > 0) ? callValue : 0;
 }
 
-Asian::Value Asian::monteCarloCPU(int pathN)
+Asian::Value Asian::monteCarloCPU()
 {
-    const double MuByT = (R - 0.5 * V * V) * T;
-    const double VBySqrtT = V * sqrt(T);
-    float *samples;
-    curandGenerator_t cudaGen;
-    unsigned long long seed = 1234ULL;
-
-    curandCreateGeneratorHost(&cudaGen, CURAND_RNG_PSEUDO_DEFAULT);
-    curandSetPseudoRandomGeneratorSeed(cudaGen, seed);
-    samples = new float[pathN];
-    curandGenerateNormal(cudaGen, samples, pathN, 0.0, 1.0);
 
     double sum = 0, sum2 = 0;
+    double *normals = new double[basketSize];
+    double *currents = new double[basketSize];
 
-    for (int pos = 0; pos < pathN; pos++)
+    curandState state;
+    curand_init(2230, 0, 0, &state);
+    double mean;
+
+    double dt = 1. / observation;
+    double payoff;
+
+    for (int i = 0; i < pathNum; i++)
     {
+        mean = 0;
+        for (int j = 0; j < basketSize; j++)
+        {
+            currents[j] = price[j];
+        }
+        for (int j = 0; j < observation; j++)
+        {
+            randNormal(&state, normals);
+            for (int k = 0; k < basketSize; k++)
+            {
+                double growthFactor = drift[k] * exp(volatility[k] * sqrt(dt) * normals[k]);
+                currents[k] *= growthFactor;
+                mean += currents[k];
+            }
+        }
 
-        double sample = samples[pos];
-        double callValue = endCallValue(S, X, sample, MuByT, VBySqrtT);
-        sum += callValue;
-        sum2 += callValue * callValue;
+        mean /= observation * basketSize;
+        payoff = exp(-interest * maturity) * (mean - strike > 0 ? mean - strike : 0);
+
+        sum += payoff;
+        sum2 += payoff * payoff;
     }
 
-    delete[] samples;
-
-    curandDestroyGenerator(cudaGen);
-
+    delete[] normals;
+    delete[] currents;
     Value ret;
 
-    ret.expected = (float)(exp(-R * T) * sum / (double)pathN);
-    double stdDev = sqrt(((double)pathN * sum2 - sum * sum) / ((double)pathN * (double)(pathN - 1)));
-    ret.confidence = (float)(exp(-R * T) * 1.96 * stdDev / sqrt((double)pathN));
+    ret.expected = sum / (double)pathNum;
+    double stdDev = sqrt(((double)pathNum * sum2 - sum * sum) / ((double)pathNum * (double)(pathNum - 1)));
+    ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
     return ret;
 }

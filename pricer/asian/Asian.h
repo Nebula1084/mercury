@@ -1,6 +1,7 @@
 #ifndef ASIAN_H
 #define ASIAN_H
 
+#include <option/Option.h>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -12,15 +13,18 @@ class Asian
 public:
   double *corMatrix;
   double *choMatrix;
+  double *drift;
 
   int basketSize;
 
-  double S;
-  double X;
-  double T;
-  double R;
-  double V;
+  double *price;
+  double *volatility;
+  double interest;
+  double maturity;
+  double strike;
+  OptionType type;
   int pathNum;
+  int observation;
 
   class Value
   {
@@ -30,11 +34,11 @@ public:
   };
 
   Asian();
-  Asian(int basketSize, double *corMatrix);
+  Asian(int basketSize, double *corMatrix, double *volatility, double interest, int observation);
 
   double *cholesky();
-  double *randNormal(curandState *state);
-  Value monteCarloCPU(int pathN);
+  void randNormal(curandState *state, double *dependNormals);
+  Value monteCarloCPU();
 };
 
 #endif
