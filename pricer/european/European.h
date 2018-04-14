@@ -1,22 +1,20 @@
 #ifndef EUROPEAN_H
 #define EUROPEAN_H
 
-#include <option/Option.h>
 #include <stdio.h>
+#include <option/Option.h>
+#include <option/BlackScholes.h>
 
 class European
 {
-private:
-  friend class Volatility;
+public:
   float interest;
   float repo;
   Instrument instrument;
   Asset asset;
-  
-public:
-  float calculate();
-  European();
-  European(float r, float repo, Instrument instrument, Asset asset);
+
+  European(float interest, float repo, Instrument instrument, Asset asset);
+  double calculate();
 
 } __attribute__((packed));
 

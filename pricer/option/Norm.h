@@ -1,10 +1,14 @@
 #ifndef PI
 #define PI 3.141592653589793238462643
+#endif
+
+#ifndef NORM_H
+#define NORM_H
 
 #include <cmath>
-#include <math.h>
+// #include <math.h>
 
-float norm_cdf(float d);
-float norm_pdf(float d);
+double normCdf(double d);
+double normPdf(double d);
 
 #endif
