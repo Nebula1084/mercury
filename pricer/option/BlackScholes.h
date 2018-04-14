@@ -12,7 +12,7 @@ public:
   Instrument instrument;
   Asset asset;
 
-  BlackScholes(double r, double repo, Instrument instrument, Asset asset);
+  BlackScholes(double interest, double repo, Instrument instrument, Asset asset);
   double calculate();
   double vega();
 

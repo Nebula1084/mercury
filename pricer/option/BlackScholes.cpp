@@ -15,18 +15,19 @@ double BlackScholes::calculate()
     double K = this->instrument.strike;
     double timeSqrt = sqrt(T);
     double d1, d2, price;
+    double mu = this->asset.mean;
 
-    d1 = (log(S / K) + (r - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
+    d1 = (log(S / K) + (mu - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
     d2 = d1 - (sigma * timeSqrt);
 
-    if (this->instrument.type == 1)
+    if (this->instrument.type == CALL)
     {
-        price = S * exp(-repo * T) * normCdf(d1) - K * exp(-r * T) * normCdf(d2);
+        price = S * exp((mu - r - repo) * T) * normCdf(d1) - K * exp(-r * T) * normCdf(d2);
         return price;
     }
-    else if (this->instrument.type == 2)
+    else if (this->instrument.type == PUT)
     {
-        price = K * exp(-r * T) * normCdf(-d2) - S * exp(-repo * T) * normCdf(-d1);
+        price = K * exp(-r * T) * normCdf(-d2) - S * exp((mu - r - repo) * T) * normCdf(-d1);
         return price;
     }
     else

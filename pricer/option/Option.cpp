@@ -4,23 +4,23 @@ Asset::Asset()
 {
 }
 
-Asset::Asset(float S, float sigma)
+Asset::Asset(double price, double volatility, double mean)
 {
-  this->price = S;
-  this->volatility = sigma;
+  this->price = price;
+  this->volatility = volatility;
+  this->mean = mean;
 }
 
-void Asset::setVolatility(float sigma)
+void Asset::setVolatility(double volatility)
 {
-  this->volatility = sigma;
+  this->volatility = volatility;
 }
-
 
 Instrument::Instrument()
 {
 }
 
-Instrument::Instrument(float maturity, float strike, OptionType type)
+Instrument::Instrument(double maturity, double strike, OptionType type)
 {
   this->maturity = maturity;
   this->strike = strike;

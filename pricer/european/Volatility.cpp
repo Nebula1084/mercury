@@ -30,10 +30,10 @@ double Volatility::calculate()
     int n = 1;
     int nmax = 100;
     double value, vega, increment;
-    
+
 
     //construct an European Object
-    Asset asset(S, sigma);
+    Asset asset(S, sigma, interest);
     BlackScholes formula(r, repo, this->instrument, asset);
 
     //upper bound and lower bound

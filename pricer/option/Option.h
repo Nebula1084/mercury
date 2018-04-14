@@ -15,25 +15,25 @@ const Operation AMERICAN = 3;
 class Asset
 {
 public:
-  float price;
-  float volatility;
+  double price;
+  double mean;
+  double volatility;
 
-  void setVolatility(float sigma);
   Asset();
-  Asset(float S, float sigma);
-
-
+  Asset(double price, double volatility, double mean);
+  
+  void setVolatility(double volatility);
 } __attribute__((packed));
 
 class Instrument
 {
 public:
-  float maturity;
-  float strike;
+  double maturity;
+  double strike;
   OptionType type;
 
   Instrument();
-  Instrument(float maturity, float strike, OptionType type);
+  Instrument(double maturity, double strike, OptionType type);
 
 } __attribute__((packed));
 
