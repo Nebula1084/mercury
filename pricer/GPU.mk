@@ -41,7 +41,7 @@ $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
 cpu_test: CpuTest.o option/European.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
-gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o asian/MonteCarloKernel.o
+gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o simulate/MonteCarloKernel.o simulate/MonteCarlo.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:

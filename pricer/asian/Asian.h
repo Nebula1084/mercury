@@ -6,7 +6,6 @@
 #include <cmath>
 #include <iostream>
 #include <random>
-#include <curand_kernel.h>
 
 class Asian
 {
@@ -26,19 +25,8 @@ public:
   int pathNum;
   int observation;
 
-  class Value
-  {
-  public:
-    double expected;
-    double confidence;
-  };
-
   Asian();
   Asian(int basketSize, double *corMatrix, double *volatility, double interest, int observation);
-
-  double *cholesky();
-  void randNormal(curandState *state, double *dependNormals);
-  Value monteCarloCPU();
 };
 
 #endif

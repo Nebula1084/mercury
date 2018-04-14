@@ -1,5 +1,5 @@
 #include <asian/Asian.h>
-#include <asian/MonteCarlo.h>
+#include <simulate/MonteCarlo.h>
 #include <american/American.h>
 #include <american/Binomial.h>
 #include <vector>
@@ -30,14 +30,14 @@ void cholesky()
         12, 37, -43,
         -16, -43, 98};
 
-    Asian asin1(3, corMatrix1, volatility, 0.3, 1);
+    MonteCarlo asin1(3, corMatrix1, volatility, 0.3, 1);
     auto res = asin1.cholesky();
     print(3, res);
     std::cout << "-------------------------" << std::endl;
     double corMatrix2[4] = {
         1, 0.5,
         0.5, 1};
-    Asian asin2(2, corMatrix2, volatility, 0.3, 10);
+    MonteCarlo asin2(2, corMatrix2, volatility, 0.3, 10);
     res = asin2.cholesky();
     print(2, res);
     std::cout << "-------------------------" << std::endl;
@@ -45,7 +45,7 @@ void cholesky()
         1, 0.5, 0.5,
         0.5, 1, 0.5,
         0.5, 0.5, 1};
-    Asian asin3(3, corMatrix3, volatility, 0.1, 10);
+    MonteCarlo asin3(3, corMatrix3, volatility, 0.1, 10);
     res = asin3.cholesky();
     print(3, res);
 }
@@ -59,7 +59,7 @@ void corNormal()
         0.8, 1, 0.5,
         0.9, 0.5, 1};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    Asian asin(3, corMatrix, volatility, 0.3, 10);
+    MonteCarlo asin(3, corMatrix, volatility, 0.3, 10);
 
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
@@ -223,19 +223,22 @@ void monteCarlo()
 
     for (int i = 0; i < num; i++)
     {
-        Asian option(basketSize, corMatrix, volatility, 0.03, 100);
+        MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100);
         option.price = prices;
         option.strike = 4;
         option.maturity = 1;
         option.pathNum = 1e5;
 
-        Asian::Value callValueCPU = option.monteCarloCPU();
+        double covMatrix[9];
+        double expection[3];
+        Value callValueCPU = option.simulateCPU(expection, covMatrix);
         printf("Exp : %f \t| Conf: %f\n", callValueCPU.expected, callValueCPU.confidence);
     }
 }
 
 void monteCarloGPU()
 {
+    
     double corMatrix[9] = {
         1, 0.8, 0.9,
         0.8, 1, 0.5,
@@ -243,14 +246,14 @@ void monteCarloGPU()
     int basketSize = 3;
     double prices[basketSize] = {5, 5, 5};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    Asian option(basketSize, corMatrix, volatility, 0.03, 100);
+    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100);
     option.price = prices;
     option.strike = 4;
     option.maturity = 1;
-    option.pathNum = 10000000;
+    option.pathNum = 1000000;
     double covMatrix[9];
     double expection[3];
-    Asian::Value callValueGPU = monteCarloGPU(&option, expection, covMatrix);
+    Value callValueGPU = option.simulateGPU(expection, covMatrix);
     printf("Exp : %f \t| Conf: %f\n", callValueGPU.expected, callValueGPU.confidence);
     printf("covariance matrix:\n");
     for (int j = 0; j < basketSize; j++)
