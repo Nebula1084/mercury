@@ -18,11 +18,12 @@ class Asset
 {
 private:
   friend class European;
+  friend class Volatility;
   float price;
   float volatility;
 
 public:
-  void setVolarility(float sigma);
+  void setVolatility(float sigma);
   Asset();
   Asset(float S, float sigma);
 
@@ -32,6 +33,7 @@ class Instrument
 {
 private:
   friend class European;
+  friend class Volatility;
   float maturity;
   float strike;
   OptionType type;

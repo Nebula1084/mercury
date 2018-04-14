@@ -6,38 +6,47 @@ using namespace std;
 
 int main()
 {
-    Asset asset1(100.0,0.2);
-    Instrument instrument1(0.5,100.0,2);
-    European european1(0.01,0,instrument1,asset1);
+    Instrument instrument1(0.0219,1.8,CALL);
+    Volatility volatility1(0.04,0.2,instrument1,0.1547,1.9595);
 
-    Asset asset2(100.0,0.2);
-    Instrument instrument2(0.5,120.0,2);
-    European european2(0.01,0,instrument2,asset2);
+    Instrument instrument2(0.0219,2.1,2);
+    Volatility volatility2(0.04,0.2,instrument2,0.143,1.9595);
 
-    Asset asset3(100.0,0.2);
-    Instrument instrument3(1.0,100.0,2);
-    European european3(0.01,0,instrument3,asset3);
+    Instrument instrument3(0.0219,2.1,2);
+    Volatility volatility3(0.04,0.2,instrument3,0.1599,1.9595);
 
-    Asset asset4(100.0,0.3);
-    Instrument instrument4(0.5,100.0,2);
-    European european4(0.01,0,instrument4,asset4);
+    Instrument instrument4(0.0219,2.5,1);
+    Volatility volatility4(0.04,0.2,instrument4,0.0001,1.9595);
 
-    Asset asset5(100.0,0.2);
-    Instrument instrument5(0.5,100.0,2);
-    European european5(0.02,0,instrument5,asset5);
+    Instrument instrument5(0.0219,2.5,2);
+    Volatility volatility5(0.04,0.2,instrument5,0.4828,1.9595);
+
+    Instrument instrument6(0.0219,2.5,1);
+    Volatility volatility6(0.04,0.2,instrument6,0.0004,1.9595);
+
+    Instrument instrument7(0.0219,2.5,1);
+    Volatility volatility7(0.04,0.2,instrument7,0.6251,1.9595);
+
+    float sigma1 = volatility1.calculate();
+    cout<<sigma1<<endl;
+
+    float sigma2 = volatility2.calculate();
+    cout<<sigma2<<endl;
+
+    float sigma3 = volatility3.calculate();
+    cout<<sigma3<<endl;
     
-    float v1 = european1.calculate();
-    float v2 = european2.calculate();
-    float v3 = european3.calculate();
-    float v4 = european4.calculate();
-    float v5 = european5.calculate();
+    float sigma4 = volatility4.calculate();
+    cout<<sigma4<<endl;
 
-    cout<<"Call Option:"<<endl;
-    cout<<v1<<endl;
-    cout<<v2<<endl;
-    cout<<v3<<endl;
-    cout<<v4<<endl;
-    cout<<v5<<endl;
+    float sigma5 = volatility5.calculate();
+    cout<<sigma5<<endl;
+
+    float sigma6 = volatility6.calculate();
+    cout<<sigma6<<endl;
+
+    float sigma7 = volatility7.calculate();
+    cout<<sigma7<<endl;
 
     return 0;
 }

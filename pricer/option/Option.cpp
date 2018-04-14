@@ -10,7 +10,7 @@ Asset::Asset(float S, float sigma)
   this->volatility = sigma;
 }
 
-void Asset::setVolarility(float sigma)
+void Asset::setVolatility(float sigma)
 {
   this->volatility = sigma;
 }

@@ -35,7 +35,7 @@ endif
 $(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
-cpu_test: CpuTest.o option/European.o option/Option.o option/Norm.o
+cpu_test: CpuTest.o option/European.o option/Option.o option/Norm.o option/Volatility.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
 gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o
