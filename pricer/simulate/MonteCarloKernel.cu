@@ -275,11 +275,10 @@ Result MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
 
     Result ret;
 
-    ret.expected = payArithRet / (double)pathNum;
     ret.arithPayoff = payArithRet / (double)pathNum;
     ret.geoPayoff = payGeoRet / (double)pathNum;
-    double stdDev = sqrt(((double)pathNum * pay2Ret - payArithRet * payArithRet) / ((double)pathNum * (double)(pathNum - 1)));
-    ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
+    // double stdDev = sqrt(((double)pathNum * pay2Ret - payArithRet * payArithRet) / ((double)pathNum * (double)(pathNum - 1)));
+    // ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
 
     cudaFreeHost(sumHost);
     cudaFreeHost(sum2Host);

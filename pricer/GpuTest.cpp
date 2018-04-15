@@ -39,7 +39,7 @@ void cholesky()
     int pathNum = 1e5;
 
     MonteCarlo asin1(basketSize, prices, corMatrix1, volatility, 0.3, maturity,
-                     strike, pathNum, observation, CALL);
+                     strike, pathNum, observation, CALL, false);
     auto res = asin1.cholesky();
     print(3, res);
     std::cout << "-------------------------" << std::endl;
@@ -47,7 +47,7 @@ void cholesky()
         1, 0.5,
         0.5, 1};
     MonteCarlo asin2(2, prices, corMatrix2, volatility, 0.3, maturity,
-                     strike, pathNum, 10, CALL);
+                     strike, pathNum, 10, CALL, false);
     res = asin2.cholesky();
     print(2, res);
     std::cout << "-------------------------" << std::endl;
@@ -56,7 +56,7 @@ void cholesky()
         0.5, 1, 0.5,
         0.5, 0.5, 1};
     MonteCarlo asin3(3, prices, corMatrix3, volatility, 0.1, maturity,
-                     strike, pathNum, 10, CALL);
+                     strike, pathNum, 10, CALL, false);
     res = asin3.cholesky();
     print(3, res);
 }
@@ -77,7 +77,7 @@ void corNormal()
     int pathNum = 1e5;
 
     MonteCarlo asin(3, prices, corMatrix, volatility, 0.3, maturity,
-                    strike, pathNum, 10, CALL);
+                    strike, pathNum, 10, CALL, false);
 
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
@@ -246,19 +246,19 @@ void monteCarlo()
     for (int i = 0; i < num; i++)
     {
         MonteCarlo option(basketSize, prices, corMatrix, volatility, 0.03,
-                          maturity, strike, pathNum, observation, CALL);
+                          maturity, strike, pathNum, observation, CALL, false);
 
         double covMatrix[9];
         double expection[3];
         Result callValueCPU = option.simulateCPU(expection, covMatrix);
-        printf("Exp : %f \t| Conf: %f\n", callValueCPU.expected, callValueCPU.confidence);
+
+        printf("Arith : %f \t| Geo: %f\n", callValueCPU.arithPayoff, callValueCPU.geoPayoff);
     }
 }
 
 void printResult(int basketSize, Result &result, double *covMatrix, double *expection)
 {
-    printf("Exp : %f \t| Conf: %f\n", result.expected, result.confidence);
-    printf("Exp : %f \t| Conf: %f\n", result.geoPayoff, result.confidence);
+    printf("Arith : %f \t| Geo: %f\n", result.arithPayoff, result.geoPayoff);
     printf("covariance matrix:\n");
     for (int j = 0; j < basketSize; j++)
     {
@@ -294,7 +294,7 @@ void monteCarloGPU()
     int pathNum = 100000;
 
     MonteCarlo option(basketSize, prices, corMatrix, volatility, 0.03,
-                      maturity, strike, pathNum, 100, CALL);
+                      maturity, strike, pathNum, 100, CALL, false);
     double covMatrix[9];
     double expection[3];
     Result result = option.simulateGPU(expection, covMatrix);
@@ -363,6 +363,7 @@ void arithmeticBasket()
     option.useGpu = true;
     std::cout << option.calculate() << std::endl;
     option.useGpu = false;
+    option.controlVariate = true;
     std::cout << option.calculate() << std::endl;
 }
 

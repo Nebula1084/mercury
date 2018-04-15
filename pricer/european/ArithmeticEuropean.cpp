@@ -9,5 +9,6 @@ ArithmeticEuropean::ArithmeticEuropean(bool controlVariate, bool useGpu, int bas
 
 double ArithmeticEuropean::calculate()
 {
-    return simulate().arithPayoff;
+    Result result = simulate(false, controlVariate);
+    return result.arithPayoff;
 }

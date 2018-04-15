@@ -1,10 +1,11 @@
 #include <simulate/MonteCarlo.h>
 
 MonteCarlo::MonteCarlo(int basketSize, double *price, double *corMatrix, double *volatility,
-                       double interest, double maturity, double strike,
-                       int pathNum, int observation, OptionType type)
+                       double interest, double maturity, double strike, int pathNum,
+                       int observation, OptionType type, bool isGeo)
     : basketSize(basketSize), price(price), corMatrix(corMatrix), volatility(volatility), interest(interest),
-      maturity(maturity), strike(strike), pathNum(pathNum), observation(observation), type(type)
+      maturity(maturity), strike(strike), pathNum(pathNum), observation(observation), type(type),
+      isGeo(isGeo), controlVariate(false), geoExp(0)
 {
     this->choMatrix = cholesky();
     this->drift = new double[basketSize];
@@ -13,8 +14,13 @@ MonteCarlo::MonteCarlo(int basketSize, double *price, double *corMatrix, double 
     for (int i = 0; i < basketSize; i++)
     {
         this->drift[i] = exp((interest - 0.5 * volatility[i] * volatility[i]) * dt);
-        // std::cout << drift[i] << std::endl;
     }
+}
+
+void MonteCarlo::setControlVariate(bool control, double geoExp)
+{
+    this->controlVariate = control;
+    this->geoExp = geoExp;
 }
 
 double *MonteCarlo::cholesky()
@@ -71,18 +77,44 @@ double MonteCarlo::optionValue(double value)
     return exp(-interest * maturity) * (value > 0 ? value : 0);
 }
 
+void MonteCarlo::statistic(double *values, double &mean, double &std)
+{
+    double sum = 0, sum2 = 0;
+    for (int i = 0; i < pathNum; i++)
+    {
+        double v = values[i];
+        sum += v;
+        sum2 += v * v;
+    }
+    mean = sum / pathNum;
+    std = sqrt(sum2 / pathNum - mean * mean);
+}
+
+double MonteCarlo::covariance(double *arith, double *geo, double arithMean, double geoMean)
+{
+    double sum = 0;
+    for (int i = 0; i < pathNum; i++)
+        sum += arith[i] * geo[i];
+    return sum / pathNum - arithMean * geoMean;
+}
+
+void MonteCarlo::variationReduce(double *dst, double *arithPayoff, double *geoPayoff, double theta)
+{
+    for (int i = 0; i < pathNum; i++)
+        dst[i] = arithPayoff[i] + theta * (geoExp - geoPayoff[i]);
+}
+
 Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
 {
-    double sum2 = 0, payArith = 0, payGeo = 0;
-    double *normals = new double[basketSize];
-    double *currents = new double[basketSize];
+    double normals[basketSize];
+    double currents[basketSize];
 
     curandState state;
     curand_init(2230, 0, 0, &state);
 
     double dt = maturity / observation;
-    double arithPayoff = 0;
-    double geoPayoff = 0;
+    double *arithPayoff = new double[pathNum];
+    double *geoPayoff = new double[pathNum];
 
     for (int i = 0; i < pathNum; i++)
     {
@@ -101,7 +133,6 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
                 currents[k] *= growthFactor;
                 arithMean += currents[k];
                 geoMean *= currents[k];
-                // std::cout << j << " " << k << " " << currents[k] << std::endl;
             }
         }
 
@@ -109,28 +140,49 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
         geoMean = std::pow(geoMean, 1 / (double)(observation * basketSize));
         if (this->type == CALL)
         {
-            arithPayoff = optionValue(arithMean - strike);
-            geoPayoff = optionValue(geoMean - strike);
+            arithPayoff[i] = optionValue(arithMean - strike);
+            geoPayoff[i] = optionValue(geoMean - strike);
         }
         else if (this->type == PUT)
         {
-            arithPayoff = optionValue(strike - arithMean);
-            geoPayoff = optionValue(strike - geoMean);
+            arithPayoff[i] = optionValue(strike - arithMean);
+            geoPayoff[i] = optionValue(strike - geoMean);
         }
-        // std::cout << geoMean - strike << std::endl;
-        payArith += arithPayoff;
-        payGeo += geoPayoff;
-        sum2 += arithPayoff * arithPayoff;
     }
 
-    delete[] normals;
-    delete[] currents;
     Result ret;
+    double aMean, gMean, aStd, gStd;
 
-    ret.expected = payArith / (double)pathNum;
-    ret.arithPayoff = payArith / (double)pathNum;
-    ret.geoPayoff = payGeo / (double)pathNum;
-    double stdDev = sqrt(((double)pathNum * sum2 - payArith * payArith) / ((double)pathNum * (double)(pathNum - 1)));
-    ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
+    statistic(arithPayoff, aMean, aStd);
+    statistic(geoPayoff, gMean, gStd);
+
+    if (isGeo)
+    {
+        ret.mean = gMean;
+    }
+    else
+    {
+        if (controlVariate)
+        {
+            double cov = covariance(arithPayoff, geoPayoff, aMean, gMean);
+            double theta = cov / (gStd * gStd);
+            double *newArith = new double[pathNum];
+            variationReduce(newArith, arithPayoff, geoPayoff, theta);
+            statistic(newArith, aMean, aStd);
+            delete[] newArith;
+            ret.mean = aMean;
+        }
+        else
+            ret.mean = aMean;
+    }
+
+    ret.arithPayoff = aMean;
+    ret.arith2 = aStd;
+    ret.geoPayoff = gMean;
+    ret.geo2 = gStd;
+
+    // ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
+    delete[] arithPayoff;
+    delete[] geoPayoff;
     return ret;
 }

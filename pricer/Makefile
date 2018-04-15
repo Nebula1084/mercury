@@ -44,3 +44,8 @@ gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o
 clean:
 	@rm -rf *.o
 	@rm -rf *_test
+	@rm -rf asian/*.o
+	@rm -rf european/*.o
+	@rm -rf simulate/*.o
+	@rm -rf american/*.o
+	@rm -rf option/*.o

@@ -23,7 +23,8 @@ class BasketEuropean
     virtual ~BasketEuropean();
 
     virtual double calculate() = 0;
-    Result simulate();
+    double formulate();
+    Result simulate(bool isGeo, bool control);
 };
 
 #endif
