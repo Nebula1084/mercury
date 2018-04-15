@@ -69,7 +69,7 @@ __global__ void monteCarloOptionKernel(
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int size = plan->basketSize;
     int offset = idx * size;
-    double dt = 1. / plan->observation;
+    double dt = plan->maturity / plan->observation;
     double arithPayoff = 0;
     double geoPayoff = 0;
     double payArithPerThread = 0;

@@ -2,6 +2,7 @@
 #include <simulate/MonteCarlo.h>
 #include <american/American.h>
 #include <american/Binomial.h>
+#include <european/GeometricEuropean.h>
 #include <vector>
 #include <iostream>
 #include <stdio.h>
@@ -24,20 +25,27 @@ void cholesky()
 {
     int basketSize = 3;
     double volatility[basketSize] = {0.25, 0.3, 0.1};
+    double prices[basketSize] = {5, 5, 5};
     std::cout << "---------Cholesky-----------" << std::endl;
     double corMatrix1[9] = {
         4, 12, -16,
         12, 37, -43,
         -16, -43, 98};
+    double strike = 4;
+    double maturity = 1;
+    double observation = 100;
+    int pathNum = 1e5;
 
-    MonteCarlo asin1(3, corMatrix1, volatility, 0.3, 1, CALL);
+    MonteCarlo asin1(basketSize, prices, corMatrix1, volatility, 0.3, maturity,
+                     strike, pathNum, observation, CALL);
     auto res = asin1.cholesky();
     print(3, res);
     std::cout << "-------------------------" << std::endl;
     double corMatrix2[4] = {
         1, 0.5,
         0.5, 1};
-    MonteCarlo asin2(2, corMatrix2, volatility, 0.3, 10, CALL);
+    MonteCarlo asin2(2, prices, corMatrix2, volatility, 0.3, maturity,
+                     strike, pathNum, 10, CALL);
     res = asin2.cholesky();
     print(2, res);
     std::cout << "-------------------------" << std::endl;
@@ -45,7 +53,8 @@ void cholesky()
         1, 0.5, 0.5,
         0.5, 1, 0.5,
         0.5, 0.5, 1};
-    MonteCarlo asin3(3, corMatrix3, volatility, 0.1, 10, CALL);
+    MonteCarlo asin3(3, prices, corMatrix3, volatility, 0.1, maturity,
+                     strike, pathNum, 10, CALL);
     res = asin3.cholesky();
     print(3, res);
 }
@@ -59,7 +68,14 @@ void corNormal()
         0.8, 1, 0.5,
         0.9, 0.5, 1};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    MonteCarlo asin(3, corMatrix, volatility, 0.3, 10, CALL);
+    double prices[basketSize] = {5, 5, 5};
+    double strike = 4;
+    double maturity = 1;
+    double observation = 100;
+    int pathNum = 1e5;
+
+    MonteCarlo asin(3, prices, corMatrix, volatility, 0.3, maturity,
+                    strike, pathNum, 10, CALL);
 
     double sum[basketSize] = {0};
     double sum2[basketSize] = {0};
@@ -220,14 +236,15 @@ void monteCarlo()
     double corMatrix[basketSize * basketSize] =
         {1, 0.5,
          0.5, 1};
+    double strike = 4;
+    double maturity = 1;
+    double observation = 100;
+    int pathNum = 1e5;
 
     for (int i = 0; i < num; i++)
     {
-        MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, CALL);
-        option.price = prices;
-        option.strike = 4;
-        option.maturity = 1;
-        option.pathNum = 1e5;
+        MonteCarlo option(basketSize, prices, corMatrix, volatility, 0.03,
+                          maturity, strike, pathNum, observation, CALL);
 
         double covMatrix[9];
         double expection[3];
@@ -270,11 +287,12 @@ void monteCarloGPU()
     int basketSize = 3;
     double prices[basketSize] = {5, 5, 5};
     double volatility[basketSize] = {0.25, 0.3, 0.1};
-    MonteCarlo option(basketSize, corMatrix, volatility, 0.03, 100, CALL);
-    option.price = prices;
-    option.strike = 4;
-    option.maturity = 1;
-    option.pathNum = 100000;
+    int strike = 4;
+    double maturity = 1;
+    int pathNum = 100000;
+
+    MonteCarlo option(basketSize, prices, corMatrix, volatility, 0.03,
+                      maturity, strike, pathNum, 100, CALL);
     double covMatrix[9];
     double expection[3];
     Result result = option.simulateGPU(expection, covMatrix);
@@ -283,9 +301,46 @@ void monteCarloGPU()
     printResult(basketSize, result, covMatrix, expection);
 }
 
+void geometricBasket()
+{
+    bool closedForm = true;
+    bool controlVariate = false;
+    bool useGpu = false;
+    int basketSize = 2;
+    double interest = 0.05;
+    int pathNum = 1e6;
+    Instrument instrument(3, 100, CALL);
+    Asset asset[basketSize] = {
+        {100, 0.3, interest},
+        {100, 0.3, interest}};
+    double corMatrix[basketSize * basketSize] = {
+        1, 0.5,
+        0.5, 1};
+    GeometricEuropean option(
+        closedForm,
+        controlVariate,
+        useGpu,
+        basketSize,
+        interest,
+        instrument,
+        asset,
+        corMatrix,
+        pathNum);
+
+    
+    std::cout << option.calculate() << std::endl;
+    option.closedForm = false;
+    option.useGpu = true;
+    std::cout << option.calculate() << std::endl;
+    option.useGpu = false;
+    std::cout << option.calculate() << std::endl;
+    controlVariate = false;
+}
+
 int main()
 {
-    monteCarloGPU();
     // corNormal();
+    // monteCarloGPU();
     // monteCarlo();
+    geometricBasket();
 }

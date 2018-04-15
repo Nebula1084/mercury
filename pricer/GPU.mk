@@ -35,13 +35,16 @@ endif
 %.o:%.cpp
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-$(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
+$(BIN)/pricer: Main.o IPC.o option/Volatility.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
-cpu_test: CpuTest.o option/European.o
+cpu_test: CpuTest.o 
 	$(CC) -o $@ $+ $(LIBRARIES)
 
-gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o simulate/MonteCarloKernel.o simulate/MonteCarlo.o
+gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o \
+	simulate/MonteCarloKernel.o simulate/MonteCarlo.o european/European.o \
+	european/BasketEuropean.o european/GeometricEuropean.o european/Volatility.o \
+	option/BlackScholes.o option/Norm.o option/Option.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:

@@ -33,8 +33,9 @@ public:
 
   double *choMatrix;
   double *drift;
-  MonteCarlo(int basketSize, double *corMatrix, double *volatility,
-             double interest, int observation, OptionType type);
+  MonteCarlo(int basketSize, double *price, double *corMatrix, double *volatility,
+             double interest, double maturity, double strike,
+             int pathNum, int observation, OptionType type);
 
   double *cholesky();
   void randNormal(curandState *state, double *dependNormals);

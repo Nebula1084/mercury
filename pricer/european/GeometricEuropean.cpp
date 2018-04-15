@@ -1,9 +1,9 @@
 #include <european/GeometricEuropean.h>
 
 GeometricEuropean::GeometricEuropean(bool closedForm, bool controlVariate, bool useGpu, int basketSize, double interest,
-                                     double repo, Instrument instrument, Asset *asset, double *corMatrix)
-    : closedForm(closedForm), controlVariate(controlVariate), useGpu(useGpu),
-      BasketEuropean(basketSize, interest, repo, instrument, asset, corMatrix)
+                                     Instrument instrument, Asset *asset, double *corMatrix, int pathNum)
+    : closedForm(closedForm), controlVariate(controlVariate), useGpu(useGpu), pathNum(pathNum),
+      BasketEuropean(basketSize, interest, 0, instrument, asset, corMatrix)
 {
 }
 
@@ -34,20 +34,30 @@ double GeometricEuropean::formulate()
     mu = interest - 0.5 * mu / basketPrice + 0.5 * sigma * sigma;
 
     Asset basketAsset(basketPrice, sigma, mu);
+    std::cout << sigma << " " << mu << std::endl;
     BlackScholes formula(interest, interest, instrument, basketAsset);
     return formula.calculate();
 }
 
 double GeometricEuropean::simulate()
 {
-    double *volatility = new double[basketSize];
-    for (int i = 0; i < basketSize; i++)
-        volatility[i] = asset[i].volatility;
-    MonteCarlo simulator(basketSize, corMatrix, volatility, interest, 1);
-    if (useGpu)
-        simulator.simulateGPU();
-    else
-        simulator.simulateCPU();
+    double volatility[basketSize];
+    double price[basketSize];
+    double covMatrix[basketSize * basketSize];
+    double expectation[basketSize];
 
-    delete[] volatility;
+    for (int i = 0; i < basketSize; i++)
+    {
+        price[i] = asset[i].price;
+        volatility[i] = asset[i].volatility;
+    }
+    MonteCarlo simulator(basketSize, price, corMatrix, volatility, interest, instrument.maturity,
+                         instrument.strike, pathNum, 1, instrument.type);
+    Result result;
+    if (useGpu)
+        result = simulator.simulateGPU(expectation, covMatrix);
+    else
+        result = simulator.simulateCPU(expectation, covMatrix);
+
+    return result.geoPayoff;
 }

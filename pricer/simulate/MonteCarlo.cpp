@@ -1,17 +1,19 @@
 #include <simulate/MonteCarlo.h>
 
-MonteCarlo::MonteCarlo(int basketSize, double *corMatrix, double *volatility,
-                       double interest, int observation, OptionType type)
-    : basketSize(basketSize), corMatrix(corMatrix), volatility(volatility), interest(interest),
-      observation(observation), type(type)
+MonteCarlo::MonteCarlo(int basketSize, double *price, double *corMatrix, double *volatility,
+                       double interest, double maturity, double strike,
+                       int pathNum, int observation, OptionType type)
+    : basketSize(basketSize), price(price), corMatrix(corMatrix), volatility(volatility), interest(interest),
+      maturity(maturity), strike(strike), pathNum(pathNum), observation(observation), type(type)
 {
     this->choMatrix = cholesky();
     this->drift = new double[basketSize];
 
-    double dt = 1. / observation;
+    double dt = maturity / observation;
     for (int i = 0; i < basketSize; i++)
     {
         this->drift[i] = exp((interest - 0.5 * volatility[i] * volatility[i]) * dt);
+        // std::cout << drift[i] << std::endl;
     }
 }
 
@@ -78,7 +80,7 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
     curandState state;
     curand_init(2230, 0, 0, &state);
 
-    double dt = 1. / observation;
+    double dt = maturity / observation;
     double arithPayoff = 0;
     double geoPayoff = 0;
 
@@ -99,6 +101,7 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
                 currents[k] *= growthFactor;
                 arithMean += currents[k];
                 geoMean *= currents[k];
+                // std::cout << j << " " << k << " " << currents[k] << std::endl;
             }
         }
 
@@ -114,6 +117,7 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
             arithPayoff = optionValue(strike - arithMean);
             geoPayoff = optionValue(strike - geoMean);
         }
+        // std::cout << geoMean - strike << std::endl;
         payArith += arithPayoff;
         payGeo += geoPayoff;
         sum2 += arithPayoff * arithPayoff;
