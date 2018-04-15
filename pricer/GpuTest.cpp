@@ -299,8 +299,8 @@ void monteCarloGPU()
     double expection[3];
     Result result = option.simulateGPU(expection, covMatrix);
     printResult(basketSize, result, covMatrix, expection);
-    result = option.simulateCPU(expection, covMatrix);
-    printResult(basketSize, result, covMatrix, expection);
+    // result = option.simulateCPU(expection, covMatrix);
+    // printResult(basketSize, result, covMatrix, expection);
 }
 
 void geometricBasket()
@@ -330,8 +330,10 @@ void geometricBasket()
     std::cout << "--------Geometric----------" << std::endl;
     std::cout << option.calculate() << std::endl;
     option.closedForm = false;
+    std::cout << "GPU" << std::endl;
     option.useGpu = true;
     std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
     option.useGpu = false;
     std::cout << option.calculate() << std::endl;
 }
@@ -360,9 +362,16 @@ void arithmeticBasket()
         corMatrix,
         pathNum);
     std::cout << "--------Arithmetic----------" << std::endl;
+    std::cout << "GPU" << std::endl;
     option.useGpu = true;
+    option.controlVariate = false;
     std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
     option.useGpu = false;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
     option.controlVariate = true;
     std::cout << option.calculate() << std::endl;
 }
@@ -370,7 +379,7 @@ void arithmeticBasket()
 int main()
 {
     // corNormal();
-    // monteCarloGPU();
+    monteCarloGPU();
     // monteCarlo();
     geometricBasket();
     arithmeticBasket();

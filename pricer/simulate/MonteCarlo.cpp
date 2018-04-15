@@ -87,7 +87,7 @@ void MonteCarlo::statistic(double *values, double &mean, double &std)
         sum2 += v * v;
     }
     mean = sum / pathNum;
-    std = sqrt(sum2 / pathNum - mean * mean);
+    std = std::sqrt(sum2 / pathNum - mean * mean);
 }
 
 double MonteCarlo::covariance(double *arith, double *geo, double arithMean, double geoMean)
