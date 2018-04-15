@@ -10,14 +10,10 @@
 class Asian
 {
 public:
-  double *corMatrix;
-  double *choMatrix;
-  double *drift;
+  double drift;
 
-  int basketSize;
-
-  double *price;
-  double *volatility;
+  double price;
+  double volatility;
   double interest;
   double maturity;
   double strike;
@@ -26,7 +22,7 @@ public:
   int observation;
 
   Asian();
-  Asian(int basketSize, double *corMatrix, double *volatility, double interest, int observation);
+  Asian(double volatility, double interest, int observation);
 };
 
 #endif

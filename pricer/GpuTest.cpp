@@ -252,13 +252,13 @@ void monteCarlo()
         double expection[3];
         Result callValueCPU = option.simulateCPU(expection, covMatrix);
 
-        printf("Arith : %f \t| Geo: %f\n", callValueCPU.arithPayoff, callValueCPU.geoPayoff);
+        printf("Arith : %f \t| Conf: %f\n", callValueCPU.mean, callValueCPU.conf);
     }
 }
 
 void printResult(int basketSize, Result &result, double *covMatrix, double *expection)
 {
-    printf("Arith : %f \t| Geo: %f\n", result.arithPayoff, result.geoPayoff);
+    printf("Mean : %f \t| Conf: %f\n", result.mean, result.conf);
     printf("covariance matrix:\n");
     for (int j = 0; j < basketSize; j++)
     {
@@ -344,7 +344,7 @@ void arithmeticBasket()
     bool useGpu = false;
     int basketSize = 2;
     double interest = 0.05;
-    int pathNum = 1e6;
+    int pathNum = 1e5;
     Instrument instrument(3, 100, CALL);
     Asset asset[basketSize] = {
         {100, 0.3, interest},
@@ -361,7 +361,21 @@ void arithmeticBasket()
         asset,
         corMatrix,
         pathNum);
-    std::cout << "--------Arithmetic----------" << std::endl;
+    std::cout << "------Arithmetic CALl--------" << std::endl;
+    std::cout << "GPU" << std::endl;
+    option.useGpu = true;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
+    option.useGpu = false;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "------Arithmetic PUT--------" << std::endl;
+    option.instrument.type = PUT;
     std::cout << "GPU" << std::endl;
     option.useGpu = true;
     option.controlVariate = false;

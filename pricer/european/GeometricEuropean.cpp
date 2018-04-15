@@ -7,10 +7,15 @@ GeometricEuropean::GeometricEuropean(bool closedForm, bool useGpu, int basketSiz
 {
 }
 
-double GeometricEuropean::calculate()
+Result GeometricEuropean::calculate()
 {
+    Result result;
     if (closedForm)
-        return formulate();
+    {
+        result.mean = formulate();
+        result.conf = -1;
+    }
     else
-        return simulate(true, false).geoPayoff;
+        result = simulate(true, false);
+    return result;
 }

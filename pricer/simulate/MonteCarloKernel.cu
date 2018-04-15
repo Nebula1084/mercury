@@ -339,12 +339,10 @@ Result MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
 
     Result ret;
 
-    // double stdDev = sqrt(((double)pathNum * pay2Ret - payArithRet * payArithRet) / ((double)pathNum * (double)(pathNum - 1)));
-    // ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
-
     if (isGeo)
     {
         ret.mean = gMean;
+        ret.conf = confidence(gStd);
     }
     else
     {
@@ -358,16 +356,10 @@ Result MonteCarlo::simulateGPU(double *expectation, double *covMatrix)
             statisticGPU(plan, newArith, aMean, aStd);
 
             cudaFree(newArith);
-            ret.mean = aMean;
         }
-        else
-            ret.mean = aMean;
+        ret.mean = aMean;
+        ret.conf = confidence(aStd);
     }
-
-    ret.arithPayoff = aMean;
-    ret.arith2 = aStd;
-    ret.geoPayoff = gMean;
-    ret.geo2 = gStd;
 
     cudaFreeHost(sumHost);
     cudaFreeHost(sum2Host);

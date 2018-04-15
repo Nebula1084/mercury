@@ -10,7 +10,7 @@ class GeometricEuropean : public BasketEuropean
 
     GeometricEuropean(bool closedForm, bool useGpu, int basketSize, double interest,
                       Instrument instrument, Asset *asset, double *corMatrix, int pathNum);
-    virtual double calculate() override;
+    virtual Result calculate() override;
 };
 
 #endif

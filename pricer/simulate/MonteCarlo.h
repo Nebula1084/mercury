@@ -9,13 +9,9 @@
 class Result
 {
 public:
-  double arithPayoff;
-  double arith2;
-  double geoPayoff;
-  double geo2;
-  double cross;
   double mean;
   double conf;
+  friend std::ostream &operator<<(std::ostream &out, const Result result);
 };
 
 class MonteCarlo
@@ -44,6 +40,8 @@ public:
              int observation, OptionType type, bool isGeo);
 
   void setControlVariate(bool control, double geoExp);
+
+  double confidence(double std);
 
   double *cholesky();
   void randNormal(curandState *state, double *dependNormals);

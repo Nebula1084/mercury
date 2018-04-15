@@ -1,4 +1,9 @@
 #include <simulate/MonteCarlo.h>
+std::ostream &operator<<(std::ostream &out, const Result result)
+{
+    out << "Mean:" << result.mean << " Conf:" << result.conf;
+    return out;
+}
 
 MonteCarlo::MonteCarlo(int basketSize, double *price, double *corMatrix, double *volatility,
                        double interest, double maturity, double strike, int pathNum,
@@ -21,6 +26,11 @@ void MonteCarlo::setControlVariate(bool control, double geoExp)
 {
     this->controlVariate = control;
     this->geoExp = geoExp;
+}
+
+double MonteCarlo::confidence(double std)
+{
+    return 1.96 * std / sqrt((double)pathNum);
 }
 
 double *MonteCarlo::cholesky()
@@ -159,6 +169,7 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
     if (isGeo)
     {
         ret.mean = gMean;
+        ret.conf = confidence(gStd);
     }
     else
     {
@@ -170,16 +181,10 @@ Result MonteCarlo::simulateCPU(double *expectation, double *covMatrix)
             variationReduce(newArith, arithPayoff, geoPayoff, theta);
             statistic(newArith, aMean, aStd);
             delete[] newArith;
-            ret.mean = aMean;
         }
-        else
-            ret.mean = aMean;
+        ret.mean = aMean;
+        ret.conf = confidence(aStd);
     }
-
-    ret.arithPayoff = aMean;
-    ret.arith2 = aStd;
-    ret.geoPayoff = gMean;
-    ret.geo2 = gStd;
 
     // ret.confidence = (float)(1.96 * stdDev / sqrt((double)pathNum));
     delete[] arithPayoff;

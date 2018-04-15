@@ -10,6 +10,6 @@ class ArithmeticEuropean : public BasketEuropean
     bool controlVariate;
     ArithmeticEuropean(bool controlVariate, bool useGpu, int basketSize, double interest,
                        Instrument instrument, Asset *asset, double *corMatrix, int pathNum);
-    virtual double calculate() override;
+    virtual Result calculate() override;
 };
 #endif

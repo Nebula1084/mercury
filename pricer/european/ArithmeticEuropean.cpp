@@ -7,8 +7,7 @@ ArithmeticEuropean::ArithmeticEuropean(bool controlVariate, bool useGpu, int bas
 {
 }
 
-double ArithmeticEuropean::calculate()
+Result ArithmeticEuropean::calculate()
 {
-    Result result = simulate(false, controlVariate);
-    return result.arithPayoff;
+    return simulate(false, controlVariate);
 }
