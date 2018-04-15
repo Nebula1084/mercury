@@ -1,7 +1,12 @@
-#include <asian/Asian.h>
 #include <simulate/MonteCarlo.h>
+
+#include <asian/Asian.h>
+#include <asian/GeometricAsian.h>
+#include <asian/ArithmeticAsian.h>
+
 #include <american/American.h>
 #include <american/Binomial.h>
+
 #include <european/GeometricEuropean.h>
 #include <european/ArithmeticEuropean.h>
 
@@ -327,7 +332,7 @@ void geometricBasket()
         corMatrix,
         pathNum);
 
-    std::cout << "--------Geometric----------" << std::endl;
+    std::cout << "----Geometric Basket-----" << std::endl;
     std::cout << option.calculate() << std::endl;
     option.closedForm = false;
     std::cout << "GPU" << std::endl;
@@ -361,7 +366,7 @@ void arithmeticBasket()
         asset,
         corMatrix,
         pathNum);
-    std::cout << "------Arithmetic CALl--------" << std::endl;
+    std::cout << "---Arithmetic Basket CALL--" << std::endl;
     std::cout << "GPU" << std::endl;
     option.useGpu = true;
     option.controlVariate = false;
@@ -374,7 +379,88 @@ void arithmeticBasket()
     std::cout << option.calculate() << std::endl;
     option.controlVariate = true;
     std::cout << option.calculate() << std::endl;
-    std::cout << "------Arithmetic PUT--------" << std::endl;
+    std::cout << "---Arithmetic Basket PUT---" << std::endl;
+    option.instrument.type = PUT;
+    std::cout << "GPU" << std::endl;
+    option.useGpu = true;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
+    option.useGpu = false;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+}
+
+void geometricAsian()
+{
+    bool closedForm = true;
+    bool useGpu = false;
+    int basketSize = 2;
+    double interest = 0.05;
+    int pathNum = 1e5;
+    int observation = 50;
+
+    Instrument instrument(3, 100, CALL);
+    Asset asset(100, 0.3, interest);
+
+    GeometricAsian option(
+        closedForm,
+        asset,
+        interest,
+        instrument,
+        useGpu,
+        pathNum,
+        observation);
+    std::cout << "----Geometric Basket-----" << std::endl;
+    std::cout << option.calculate() << std::endl;
+    option.closedForm = false;
+    std::cout << "GPU" << std::endl;
+    option.useGpu = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
+    option.useGpu = false;
+    std::cout << option.calculate() << std::endl;
+}
+
+void arithmeticAsian()
+{
+    bool controlVariate = true;
+    bool useGpu = false;
+    int basketSize = 2;
+    double interest = 0.05;
+    int pathNum = 1e5;
+    int observation = 50;
+
+    Instrument instrument(3, 100, CALL);
+    Asset asset(100, 0.3, interest);
+
+    ArithmeticAsian option(
+        controlVariate,
+        asset,
+        interest,
+        instrument,
+        useGpu,
+        pathNum,
+        observation);
+
+    std::cout << "---Arithmetic Asian CALL--" << std::endl;
+    std::cout << "GPU" << std::endl;
+    option.useGpu = true;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "CPU" << std::endl;
+    option.useGpu = false;
+    option.controlVariate = false;
+    std::cout << option.calculate() << std::endl;
+    option.controlVariate = true;
+    std::cout << option.calculate() << std::endl;
+    std::cout << "---Arithmetic Asian PUT---" << std::endl;
     option.instrument.type = PUT;
     std::cout << "GPU" << std::endl;
     option.useGpu = true;
@@ -397,4 +483,6 @@ int main()
     // monteCarlo();
     geometricBasket();
     arithmeticBasket();
+    geometricAsian();
+    arithmeticAsian();
 }

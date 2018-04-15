@@ -1,28 +1,27 @@
 #ifndef ASIAN_H
 #define ASIAN_H
 
-#include <option/Option.h>
-#include <vector>
-#include <cmath>
 #include <iostream>
-#include <random>
+
+#include <option/Option.h>
+#include <option/BlackScholes.h>
+#include <simulate/MonteCarlo.h>
 
 class Asian
 {
 public:
-  double drift;
-
-  double price;
-  double volatility;
+  Asset asset;
   double interest;
-  double maturity;
-  double strike;
-  OptionType type;
+  Instrument instrument;
   int pathNum;
   int observation;
+  bool useGpu;
 
-  Asian();
-  Asian(double volatility, double interest, int observation);
+  Asian(Asset asset, double interest, Instrument instrument, bool useGpu, int pathNum, int observation);
+
+  virtual Result calculate() = 0;
+  double formulate();
+  Result simulate(bool isGeo, bool control);
 };
 
 #endif
