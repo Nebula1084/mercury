@@ -3,6 +3,8 @@
 #include <american/American.h>
 #include <american/Binomial.h>
 #include <european/GeometricEuropean.h>
+#include <european/ArithmeticEuropean.h>
+
 #include <vector>
 #include <iostream>
 #include <stdio.h>
@@ -304,7 +306,6 @@ void monteCarloGPU()
 void geometricBasket()
 {
     bool closedForm = true;
-    bool controlVariate = false;
     bool useGpu = false;
     int basketSize = 2;
     double interest = 0.05;
@@ -318,7 +319,6 @@ void geometricBasket()
         0.5, 1};
     GeometricEuropean option(
         closedForm,
-        controlVariate,
         useGpu,
         basketSize,
         interest,
@@ -327,14 +327,43 @@ void geometricBasket()
         corMatrix,
         pathNum);
 
-    
+    std::cout << "--------Geometric----------" << std::endl;
     std::cout << option.calculate() << std::endl;
     option.closedForm = false;
     option.useGpu = true;
     std::cout << option.calculate() << std::endl;
     option.useGpu = false;
     std::cout << option.calculate() << std::endl;
-    controlVariate = false;
+}
+
+void arithmeticBasket()
+{
+    bool controlVariate = false;
+    bool useGpu = false;
+    int basketSize = 2;
+    double interest = 0.05;
+    int pathNum = 1e6;
+    Instrument instrument(3, 100, CALL);
+    Asset asset[basketSize] = {
+        {100, 0.3, interest},
+        {100, 0.3, interest}};
+    double corMatrix[basketSize * basketSize] = {
+        1, 0.5,
+        0.5, 1};
+    ArithmeticEuropean option(
+        controlVariate,
+        useGpu,
+        basketSize,
+        interest,
+        instrument,
+        asset,
+        corMatrix,
+        pathNum);
+    std::cout << "--------Arithmetic----------" << std::endl;
+    option.useGpu = true;
+    std::cout << option.calculate() << std::endl;
+    option.useGpu = false;
+    std::cout << option.calculate() << std::endl;
 }
 
 int main()
@@ -343,4 +372,5 @@ int main()
     // monteCarloGPU();
     // monteCarlo();
     geometricBasket();
+    arithmeticBasket();
 }

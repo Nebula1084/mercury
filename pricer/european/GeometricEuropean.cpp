@@ -1,9 +1,9 @@
 #include <european/GeometricEuropean.h>
 
-GeometricEuropean::GeometricEuropean(bool closedForm, bool controlVariate, bool useGpu, int basketSize, double interest,
+GeometricEuropean::GeometricEuropean(bool closedForm, bool useGpu, int basketSize, double interest,
                                      Instrument instrument, Asset *asset, double *corMatrix, int pathNum)
-    : closedForm(closedForm), controlVariate(controlVariate), useGpu(useGpu), pathNum(pathNum),
-      BasketEuropean(basketSize, interest, 0, instrument, asset, corMatrix)
+    : closedForm(closedForm),
+      BasketEuropean(basketSize, interest, 0, instrument, asset, corMatrix, useGpu, pathNum)
 {
 }
 
@@ -12,7 +12,7 @@ double GeometricEuropean::calculate()
     if (closedForm)
         return formulate();
     else
-        return simulate();
+        return simulate().geoPayoff;
 }
 
 double GeometricEuropean::formulate()
@@ -36,27 +36,4 @@ double GeometricEuropean::formulate()
     Asset basketAsset(basketPrice, sigma, mu);
     BlackScholes formula(interest, 0, instrument, basketAsset);
     return formula.calculate();
-}
-
-double GeometricEuropean::simulate()
-{
-    double volatility[basketSize];
-    double price[basketSize];
-    double covMatrix[basketSize * basketSize];
-    double expectation[basketSize];
-
-    for (int i = 0; i < basketSize; i++)
-    {
-        price[i] = asset[i].price;
-        volatility[i] = asset[i].volatility;
-    }
-    MonteCarlo simulator(basketSize, price, corMatrix, volatility, interest, instrument.maturity,
-                         instrument.strike, pathNum, 1, instrument.type);
-    Result result;
-    if (useGpu)
-        result = simulator.simulateGPU(expectation, covMatrix);
-    else
-        result = simulator.simulateCPU(expectation, covMatrix);
-
-    return result.geoPayoff;
 }

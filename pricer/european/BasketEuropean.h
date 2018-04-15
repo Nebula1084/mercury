@@ -3,6 +3,7 @@
 
 #include <option/Option.h>
 #include <option/BlackScholes.h>
+#include <simulate/MonteCarlo.h>
 
 class BasketEuropean
 {
@@ -13,11 +14,16 @@ class BasketEuropean
     Instrument instrument;
     Asset *asset;
     double *corMatrix;
+    bool useGpu;
+    int pathNum;
 
-    BasketEuropean(int basketSize, double interest, double repo, Instrument instrument, Asset *asset, double *corMatrix);
+    BasketEuropean(int basketSize, double interest, double repo, Instrument instrument,
+                   Asset *asset, double *corMatrix, bool useGpu, int pathNum);
     BasketEuropean(const BasketEuropean &c);
-    virtual double calculate() = 0;
     virtual ~BasketEuropean();
+
+    virtual double calculate() = 0;
+    Result simulate();
 };
 
 #endif
