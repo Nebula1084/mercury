@@ -13,21 +13,21 @@ double BlackScholes::calculate()
     double repo = this->repo;
     double T = this->instrument.maturity;
     double K = this->instrument.strike;
-    double timeSqrt = sqrt(T);
+    double timeSqrt = std::sqrt(T);
     double d1, d2, price;
     double mu = this->asset.mean;
 
-    d1 = (log(S / K) + (mu - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
+    d1 = (std::log(S / K) + (mu - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
     d2 = d1 - (sigma * timeSqrt);
 
     if (this->instrument.type == CALL)
-    {
-        price = S * exp((mu - r - repo) * T) * normCdf(d1) - K * exp(-r * T) * normCdf(d2);
+    {        
+        price = S * std::exp((mu - r - repo) * T) * normCdf(d1) - K * std::exp(-r * T) * normCdf(d2);
         return price;
     }
     else if (this->instrument.type == PUT)
     {
-        price = K * exp(-r * T) * normCdf(-d2) - S * exp((mu - r - repo) * T) * normCdf(-d1);
+        price = K * std::exp(-r * T) * normCdf(-d2) - S * std::exp((mu - r - repo) * T) * normCdf(-d1);
         return price;
     }
     else
@@ -46,7 +46,7 @@ double BlackScholes::vega()
     double timeSqrt = sqrt(T);
     double sigma = this->asset.volatility;
 
-    double d1 = (log(S / K) + (r - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
+    double d1 = (std::log(S / K) + (r - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
     double vega = S * exp(-repo * T) * timeSqrt * normPdf(d1);
     return vega;
 }

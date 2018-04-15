@@ -31,11 +31,10 @@ double GeometricEuropean::formulate()
     double mu = 0;
     for (int i = 0; i < basketSize; i++)
         mu += asset[i].volatility * asset[i].volatility;
-    mu = interest - 0.5 * mu / basketPrice + 0.5 * sigma * sigma;
+    mu = interest - 0.5 * mu / basketSize + 0.5 * sigma * sigma;
 
     Asset basketAsset(basketPrice, sigma, mu);
-    std::cout << sigma << " " << mu << std::endl;
-    BlackScholes formula(interest, interest, instrument, basketAsset);
+    BlackScholes formula(interest, 0, instrument, basketAsset);
     return formula.calculate();
 }
 
