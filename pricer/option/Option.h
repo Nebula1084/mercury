@@ -26,7 +26,7 @@ public:
   Asset(double price, double volatility, double mean);
 
   void setVolatility(double volatility);
-} __attribute__((packed));
+};
 
 class Instrument
 {
@@ -37,8 +37,7 @@ public:
 
   Instrument();
   Instrument(double maturity, double strike, OptionType type);
-
-} __attribute__((packed));
+};
 
 class Result
 {

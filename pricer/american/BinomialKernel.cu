@@ -5,20 +5,25 @@
 #define BLOCK_N 256
 #define THREAD_N 256
 
+__device__ inline double optionValue(American *plan, int i, int j)
+{
+    double strike = plan->instrument.strike;
+    double d = plan->asset.price * std::exp(plan->vDt * (2.0 * i - j));
+    if (plan->instrument.type == CALL)
+        d = d - strike;
+    else if (plan->instrument.type == PUT)
+        d = strike - d;
+    return (d > 0) ? d : 0;
+}
+
 __global__ void expiryValueKernel(American *plan, double *value)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int step = plan->step;
-    int strike = plan->instrument.strike;
 
     for (int i = idx; i <= step; i += blockDim.x * gridDim.x)
     {
-        double d = plan->asset.price * exp(plan->vDt * (2.0f * i - step));
-        if (plan->instrument.type == CALL)
-            d = d - strike;
-        else if (plan->instrument.type == PUT)
-            d = strike - d;
-        value[i] = (d > 0) ? d : 0;
+        value[i] = optionValue(plan, i, plan->step);
     }
 }
 
@@ -27,7 +32,9 @@ __global__ void binomialKernel(American *plan, int iter, double *value, double *
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (int i = idx; i < iter; i += blockDim.x * gridDim.x)
     {
-        next[i] = plan->puByDf * value[i + 1] + plan->pdByDf * value[i];
+        double exercise = optionValue(plan, i, iter - 1);
+        double estimate = plan->puByDf * value[i + 1] + plan->pdByDf * value[i];
+        next[i] = exercise > estimate ? exercise : estimate;
     }
 }
 

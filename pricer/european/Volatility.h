@@ -22,6 +22,6 @@ public:
   Volatility();
   Volatility(double, double, Instrument, double, double);
 
-} __attribute__((packed));
+};
 
 #endif

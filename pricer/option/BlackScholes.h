@@ -16,6 +16,6 @@ public:
   double calculate();
   double vega();
 
-} __attribute__((packed));
+};
 
 #endif

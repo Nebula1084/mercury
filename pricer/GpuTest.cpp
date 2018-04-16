@@ -161,7 +161,7 @@ void binomial()
     double price = 100;
     double strike = 100;
     double maturity = 3;
-    int step = 10000;
+    int step = 5000;
     Asset asset(price, volatility);
     Instrument instrument(maturity, strike, CALL);
 
@@ -436,11 +436,11 @@ void arithmeticAsian()
 int main()
 {
     binomial();
-    // corNormal();
-    // monteCarloGPU();
-    // monteCarlo();
-    // geometricBasket();
-    // arithmeticBasket();
-    // geometricAsian();
-    // arithmeticAsian();
+    corNormal();
+    monteCarloGPU();
+    monteCarlo();
+    geometricBasket();
+    arithmeticBasket();
+    geometricAsian();
+    arithmeticAsian();
 }

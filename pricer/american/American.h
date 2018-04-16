@@ -15,7 +15,7 @@ class American
     int step;
 
     American(bool useGpu, double interest, Asset asset, Instrument instrument, int step);
-    double expiryCallValue(double vDt, int i);
+    double optionValue(int i, int j);
     double binomialCPU();
     double binomialGPU();
 

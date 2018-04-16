@@ -5,10 +5,10 @@ American::American(bool useGpu, double interest, Asset asset, Instrument instrum
 {
 }
 
-double American::expiryCallValue(double vDt, int i)
+double American::optionValue(int i, int j)
 {
     double strike = instrument.strike;
-    double d = asset.price * std::exp(vDt * (2.0 * i - step));
+    double d = asset.price * std::exp(vDt * (2.0 * i - j));
     if (instrument.type == CALL)
         d = d - strike;
     else if (instrument.type == PUT)
@@ -48,14 +48,18 @@ void American::preprocess()
 double American::binomialCPU()
 {
 
-    double expiryCall[step + 1];
+    double expiryValue[step + 1];
 
     for (int i = 0; i <= step; i++)
-        expiryCall[i] = expiryCallValue(vDt, i);
+        expiryValue[i] = optionValue(i, step);
 
     for (int i = step; i > 0; i--)
         for (int j = 0; j < i; j++)
-            expiryCall[j] = puByDf * expiryCall[j + 1] + pdByDf * expiryCall[j];
+        {
+            double exercise = optionValue(j, i - 1);
+            double estimate = puByDf * expiryValue[j + 1] + pdByDf * expiryValue[j];
+            expiryValue[j] = exercise > estimate ? exercise : estimate;
+        }
 
-    return (float)expiryCall[0];
+    return expiryValue[0];
 }
