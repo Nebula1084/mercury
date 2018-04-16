@@ -5,8 +5,11 @@ European::European(double interest, double repo, Instrument instrument, Asset as
 {
 }
 
-double European::calculate()
+Result European::calculate()
 {
+    Result result;
     BlackScholes formula(interest, repo, instrument, asset);
-    return formula.calculate();
+    result.mean = formula.calculate();
+    result.conf = -1;
+    return result;
 }

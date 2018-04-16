@@ -6,6 +6,7 @@
 
 #include <american/American.h>
 
+#include <european/European.h>
 #include <european/GeometricEuropean.h>
 #include <european/ArithmeticEuropean.h>
 
@@ -161,8 +162,14 @@ void binomial()
     double strike = 100;
     double maturity = 3;
     int step = 10000;
-    Asset asset(price, volatility, interest);
+    Asset asset(price, volatility);
     Instrument instrument(maturity, strike, CALL);
+
+    European european(interest, 0, instrument, asset);
+    std::cout << european.calculate() << std::endl;
+    european.instrument.type = PUT;
+    std::cout << european.calculate() << std::endl;
+
     American option(false, interest, asset, instrument, step);
 
     option.useGpu = true;

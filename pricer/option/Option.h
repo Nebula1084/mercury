@@ -22,6 +22,7 @@ public:
   double volatility;
 
   Asset();
+  Asset(double price, double volatility);
   Asset(double price, double volatility, double mean);
 
   void setVolatility(double volatility);

@@ -13,7 +13,7 @@ public:
   Asset asset;
 
   European(double interest, double repo, Instrument instrument, Asset asset);
-  double calculate();
+  Result calculate();
 
 } __attribute__((packed));
 

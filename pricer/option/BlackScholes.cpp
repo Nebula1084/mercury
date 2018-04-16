@@ -16,12 +16,14 @@ double BlackScholes::calculate()
     double timeSqrt = std::sqrt(T);
     double d1, d2, price;
     double mu = this->asset.mean;
+    if (this->asset.mean < 0)
+        mu = r;
 
     d1 = (std::log(S / K) + (mu - repo) * T) / (sigma * timeSqrt) + 0.5 * sigma * timeSqrt;
     d2 = d1 - (sigma * timeSqrt);
 
     if (this->instrument.type == CALL)
-    {        
+    {
         price = S * std::exp((mu - r - repo) * T) * normCdf(d1) - K * std::exp(-r * T) * normCdf(d2);
         return price;
     }
