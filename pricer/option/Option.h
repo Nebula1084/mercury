@@ -1,6 +1,8 @@
 #ifndef OPTION_H
 #define OPTION_H
 
+#include <iostream>
+
 typedef char OptionType;
 
 const OptionType CALL = 1;
@@ -21,7 +23,7 @@ public:
 
   Asset();
   Asset(double price, double volatility, double mean);
-  
+
   void setVolatility(double volatility);
 } __attribute__((packed));
 
@@ -36,5 +38,13 @@ public:
   Instrument(double maturity, double strike, OptionType type);
 
 } __attribute__((packed));
+
+class Result
+{
+public:
+  double mean;
+  double conf;
+  friend std::ostream &operator<<(std::ostream &out, const Result result);
+};
 
 #endif

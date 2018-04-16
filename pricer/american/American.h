@@ -1,23 +1,31 @@
 #ifndef AMERICAN_H
 #define AMERICAN_H
 
-#include <math.h>
+#include <option/Option.h>
+#include <option/Norm.h>
 
 class American
 {
   public:
-    float S;
-    float X;
-    float T;
-    float R;
-    float V;
+    bool useGpu;
 
-    const static int NUM_STEPS;
+    double interest;
+    Asset asset;
+    Instrument instrument;
+    int step;
 
-    static double CND(double d);
-    static double expiryCallValue(double S, double X, double vDt, int i);
-    float BlackScholesCall();
-    float binomialOptionsCPU();
+    American(bool useGpu, double interest, Asset asset, Instrument instrument, int step);
+    double expiryCallValue(double vDt, int i);
+    double binomialCPU();
+    double binomialGPU();
+
+    Result calculate();
+
+    double dt, vDt, rDt, If, Df, u, d;
+    double pu, pd, puByDf, pdByDf;
+
+  private:
+    void preprocess();
 };
 
 #endif

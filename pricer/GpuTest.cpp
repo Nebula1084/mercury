@@ -5,7 +5,6 @@
 #include <asian/ArithmeticAsian.h>
 
 #include <american/American.h>
-#include <american/Binomial.h>
 
 #include <european/GeometricEuropean.h>
 #include <european/ArithmeticEuropean.h>
@@ -13,7 +12,6 @@
 #include <vector>
 #include <iostream>
 #include <stdio.h>
-#include <cuda_runtime.h>
 
 void print(int dim, double *matrix)
 {
@@ -157,74 +155,26 @@ float randData(float low, float high)
 void binomial()
 {
 
-    American options[MAX_OPTIONS];
-    float callBS[MAX_OPTIONS];
-    float callCPU[MAX_OPTIONS];
-    float callGPU[MAX_OPTIONS];
+    double interest = 0.06f;
+    double volatility = 0.10f;
+    double price = 100;
+    double strike = 100;
+    double maturity = 3;
+    int step = 10000;
+    Asset asset(price, volatility, interest);
+    Instrument instrument(maturity, strike, CALL);
+    American option(false, interest, asset, instrument, step);
 
-    std::cout << "Generating input data..."
-              << std::endl;
+    option.useGpu = true;
+    std::cout << option.calculate() << std::endl;
+    option.useGpu = false;
+    std::cout << option.calculate() << std::endl;
 
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-        options[i].S = randData(5.0f, 30.0f);
-        options[i].X = randData(1.0f, 100.0f);
-        options[i].T = randData(0.25f, 10.0f);
-        options[i].R = 0.06f;
-        options[i].V = 0.10f;
-        callBS[i] = options[i].BlackScholesCall();
-    }
-
-    printf("Running GPU binomial tree...\n");
-    cudaDeviceSynchronize();
-
-    binomialOptionsGPU(callGPU, options, MAX_OPTIONS);
-
-    cudaDeviceSynchronize();
-    float sumDelta = 0;
-    float sumRef = 0;
-    printf("GPU binomial vs. Black-Scholes\n");
-
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-        sumDelta += fabs(callBS[i] - callGPU[i]);
-        sumRef += fabs(callBS[i]);
-    }
-
-    printf("L1 norm: %E\n", (double)(sumDelta / sumRef));
-    printf("Avg. diff: %E\n", (double)(sumDelta / (float)MAX_OPTIONS));
-
-    std::cout << "Running CPU binomial tree..." << std::endl;
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-        callCPU[i] = options[i].binomialOptionsCPU();
-    }
-
-    sumDelta = 0;
-    sumRef = 0;
-    std::cout << "CPU binomial vs. Black-Scholes" << std::endl;
-
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-        sumDelta += fabs(callBS[i] - callCPU[i]);
-        sumRef += fabs(callBS[i]);
-    }
-
-    printf("L1 norm: %E\n", sumDelta / sumRef);
-    printf("Avg. diff: %E\n", (double)(sumDelta / (float)MAX_OPTIONS));
-
-    printf("CPU binomial vs. GPU binomial\n");
-    sumDelta = 0;
-    sumRef = 0;
-
-    for (int i = 0; i < MAX_OPTIONS; i++)
-    {
-        sumDelta += fabs(callGPU[i] - callCPU[i]);
-        sumRef += callCPU[i];
-    }
-
-    printf("L1 norm: %E\n", (double)(sumDelta / sumRef));
-    printf("Avg. diff: %E\n", (double)(sumDelta / (float)MAX_OPTIONS));
+    option.instrument.type = PUT;
+    option.useGpu = true;
+    std::cout << option.calculate() << std::endl;
+    option.useGpu = false;
+    std::cout << option.calculate() << std::endl;
 }
 
 float randFloat(float low, float high)
@@ -478,11 +428,12 @@ void arithmeticAsian()
 
 int main()
 {
+    binomial();
     // corNormal();
-    monteCarloGPU();
+    // monteCarloGPU();
     // monteCarlo();
-    geometricBasket();
-    arithmeticBasket();
-    geometricAsian();
-    arithmeticAsian();
+    // geometricBasket();
+    // arithmeticBasket();
+    // geometricAsian();
+    // arithmeticAsian();
 }

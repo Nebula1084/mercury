@@ -6,14 +6,6 @@
 #include <curand_kernel.h>
 #include <cmath>
 
-class Result
-{
-public:
-  double mean;
-  double conf;
-  friend std::ostream &operator<<(std::ostream &out, const Result result);
-};
-
 class MonteCarlo
 {
 public:

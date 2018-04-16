@@ -1,75 +1,61 @@
 #include <american/American.h>
 
-const int American::NUM_STEPS = 2048;
-
-double American::CND(double d)
+American::American(bool useGpu, double interest, Asset asset, Instrument instrument, int step)
+    : useGpu(useGpu), interest(interest), asset(asset), instrument(instrument), step(step)
 {
-    const double A1 = 0.31938153;
-    const double A2 = -0.356563782;
-    const double A3 = 1.781477937;
-    const double A4 = -1.821255978;
-    const double A5 = 1.330274429;
-    const double RSQRT2PI = 0.39894228040143267793994605993438;
-
-    double K = 1.0 / (1.0 + 0.2316419 * fabs(d));
-
-    double cnd = RSQRT2PI * exp(-0.5 * d * d) *
-                 (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));
-
-    if (d > 0)
-        cnd = 1.0 - cnd;
-
-    return cnd;
 }
 
-double American::expiryCallValue(double S, double X, double vDt, int i)
+double American::expiryCallValue(double vDt, int i)
 {
-    double d = S * exp(vDt * (2.0 * i - NUM_STEPS)) - X;
+    double strike = instrument.strike;
+    double d = asset.price * std::exp(vDt * (2.0 * i - step));
+    if (instrument.type == CALL)
+        d = d - strike;
+    else if (instrument.type == PUT)
+        d = strike - d;
     return (d > 0) ? d : 0;
 }
 
-float American::BlackScholesCall()
+Result American::calculate()
 {
-    double sqrtT = sqrt(T);
-
-    double d1 = (log(S / X) + (R + 0.5 * V * V) * T) / (V * sqrtT);
-    double d2 = d1 - V * sqrtT;
-
-    double CNDD1 = CND(d1);
-    double CNDD2 = CND(d2);
-
-    //Calculate Call and Put simultaneously
-    double expRT = exp(-R * T);
-
-    float callResult = (float)(S * CNDD1 - X * expRT * CNDD2);
-    return callResult;
+    Result result;
+    preprocess();
+    if (useGpu)
+        result.mean = binomialGPU();
+    else
+        result.mean = binomialCPU();
+    result.conf = -1;
+    return result;
 }
 
-float American::binomialOptionsCPU()
+void American::preprocess()
+{
+    dt = instrument.maturity / (double)step;
+    vDt = asset.volatility * sqrt(dt);
+    rDt = interest * dt;
+
+    If = exp(rDt);
+    Df = exp(-rDt);
+
+    u = exp(vDt);
+    d = exp(-vDt);
+    pu = (If - d) / (u - d);
+    pd = 1.0 - pu;
+    puByDf = pu * Df;
+    pdByDf = pd * Df;
+}
+
+double American::binomialCPU()
 {
 
-    static double Call[NUM_STEPS + 1];
+    double expiryCall[step + 1];
 
-    const double dt = T / (double)NUM_STEPS;
-    const double vDt = V * sqrt(dt);
-    const double rDt = R * dt;
+    for (int i = 0; i <= step; i++)
+        expiryCall[i] = expiryCallValue(vDt, i);
 
-    const double If = exp(rDt);
-    const double Df = exp(-rDt);
+    for (int i = step; i > 0; i--)
+        for (int j = 0; j < i; j++)
+            expiryCall[j] = puByDf * expiryCall[j + 1] + pdByDf * expiryCall[j];
 
-    const double u = exp(vDt);
-    const double d = exp(-vDt);
-    const double pu = (If - d) / (u - d);
-    const double pd = 1.0 - pu;
-    const double puByDf = pu * Df;
-    const double pdByDf = pd * Df;
-
-    for (int i = 0; i <= NUM_STEPS; i++)
-        Call[i] = expiryCallValue(S, X, vDt, i);
-
-    for (int i = NUM_STEPS; i > 0; i--)
-        for (int j = 0; j <= i - 1; j++)
-            Call[j] = puByDf * Call[j + 1] + pdByDf * Call[j];
-
-    return (float)Call[0];
+    return (float)expiryCall[0];
 }

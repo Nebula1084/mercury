@@ -1,9 +1,4 @@
 #include <simulate/MonteCarlo.h>
-std::ostream &operator<<(std::ostream &out, const Result result)
-{
-    out << "Mean:" << result.mean << " Conf:" << result.conf;
-    return out;
-}
 
 MonteCarlo::MonteCarlo(int basketSize, double *price, double *corMatrix, double *volatility,
                        double interest, double maturity, double strike, int pathNum,
