@@ -7,7 +7,7 @@ class GeometricAsian : public Asian
 {
   public:
     bool closedForm;
-
+    GeometricAsian(Protocol *buff);
     GeometricAsian(bool closedForm, Asset asset, double interest, Instrument instrument,
                    bool useGpu, int pathNum, int observation);
     virtual Result calculate() override;

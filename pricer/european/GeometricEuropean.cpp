@@ -1,5 +1,11 @@
 #include <european/GeometricEuropean.h>
 
+GeometricEuropean::GeometricEuropean(Protocol *buff)
+    : closedForm(buff->closedForm),
+      BasketEuropean(buff)
+{
+}
+
 GeometricEuropean::GeometricEuropean(bool closedForm, bool useGpu, int basketSize, double interest,
                                      Instrument instrument, Asset *asset, double *corMatrix, int pathNum)
     : closedForm(closedForm),

@@ -1,5 +1,11 @@
 #include <american/American.h>
 
+American::American(Protocol *buff)
+    : useGpu(buff->useGpu), interest(buff->interest), asset(buff->asset),
+      instrument(buff->instrument), step(buff->step)
+{
+}
+
 American::American(bool useGpu, double interest, Asset asset, Instrument instrument, int step)
     : useGpu(useGpu), interest(interest), asset(asset), instrument(instrument), step(step)
 {

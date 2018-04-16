@@ -8,6 +8,8 @@ class ArithmeticEuropean : public BasketEuropean
 {
   public:
     bool controlVariate;
+    
+    ArithmeticEuropean(Protocol *buff);
     ArithmeticEuropean(bool controlVariate, bool useGpu, int basketSize, double interest,
                        Instrument instrument, Asset *asset, double *corMatrix, int pathNum);
     virtual Result calculate() override;

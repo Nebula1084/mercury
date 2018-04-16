@@ -1,33 +1,19 @@
-#include <option/European.h>
-#include <option/Volatility.h>
-#include <IPC.h>
+#include <comm/IPC.h>
+#include <comm/Protocol.h>
 
 void *price(void *message)
 {
-    int *conn_fd = (int *)message;
-    char recv_buf[2048];
-    European european;
+    int *connFd = (int *)message;
+    char recvBuf[2048];
 
-    int size = recv(*conn_fd, recv_buf, 1000, 0);
-    float res;
-    European *option;
+    int size = recv(*connFd, recvBuf, 1000, 0);
+
     if (size >= 0)
     {
-        Operation *op = (Operation *)recv_buf;
-        switch (*op)
-        {
-        case EUROPEAN:
-            res = ((European *)(recv_buf + 1))->calculate();
-            break;
-        case VOLATILITY:
-            res = ((Volatility *)(recv_buf + 1))->calculate();
-            break;
-        case AMERICAN:
-            res = ((European *)(recv_buf + 1))->calculate();
-            break;
-        }
-
-        send(*conn_fd, &res, 4, 0);
+        Option *task = Protocol::parse((Protocol *)recvBuf);
+        Result result = task->calculate();
+        delete task;
+        send(*connFd, &result, sizeof(Result), 0);
     }
     if (size == -1)
     {
@@ -35,7 +21,7 @@ void *price(void *message)
     }
 
     free(message);
-    close(*conn_fd);
+    close(*connFd);
 }
 
 int main()

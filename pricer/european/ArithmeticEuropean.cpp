@@ -1,5 +1,10 @@
 #include <european/ArithmeticEuropean.h>
 
+ArithmeticEuropean::ArithmeticEuropean(Protocol *buff)
+    : controlVariate(buff->controlVariate), BasketEuropean(buff)
+{
+}
+
 ArithmeticEuropean::ArithmeticEuropean(bool controlVariate, bool useGpu, int basketSize, double interest,
                                        Instrument instrument, Asset *asset, double *corMatrix, int pathNum)
     : controlVariate(controlVariate),

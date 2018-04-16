@@ -1,10 +1,11 @@
 #ifndef EUROPEAN_H
 #define EUROPEAN_H
 
+#include <comm/Protocol.h>
 #include <option/Option.h>
 #include <option/BlackScholes.h>
 
-class European
+class European : public Option
 {
 public:
   double interest;
@@ -12,8 +13,9 @@ public:
   Instrument instrument;
   Asset asset;
 
+  European(Protocol *buff);
   European(double interest, double repo, Instrument instrument, Asset asset);
-  Result calculate();
+  virtual Result calculate() override;
 };
 
 #endif

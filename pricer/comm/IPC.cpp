@@ -1,4 +1,4 @@
-#include <IPC.h>
+#include <comm/IPC.h>
 
 // the max connection number of the server
 #define MAX_CONNECTION_NUMBER 5

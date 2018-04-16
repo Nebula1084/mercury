@@ -26,22 +26,32 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-%.o:%.cpp
-	$(CC) $(INCLUDES) $(ALL_CCFLAGS) -o $@ -c $<
-
 %.o:%.cu
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-$(BIN)/pricer: Main.o IPC.o option/European.o option/Volatility.o
+%.o:%.cpp
+	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+pricer: Main.o asian/Asian.o american/American.o american/BinomialKernel.o \
+	simulate/MonteCarloKernel.o simulate/MonteCarlo.o european/European.o \
+	european/BasketEuropean.o european/GeometricEuropean.o european/Volatility.o \
+	option/BlackScholes.o option/Norm.o option/Option.o european/ArithmeticEuropean.o \
+	asian/GeometricAsian.o asian/ArithmeticAsian.o comm/Protocol.o comm/IPC.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	cp pricer $(BIN)/pricer
 
 cpu_test: CpuTest.o european/European.o option/Option.o option/Norm.o option/BlackScholes.o european/Volatility.o
 	$(CC) -o $@ $+ $(LIBRARIES)
 
-gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o
+gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o \
+	simulate/MonteCarloKernel.o simulate/MonteCarlo.o european/European.o \
+	european/BasketEuropean.o european/GeometricEuropean.o european/Volatility.o \
+	option/BlackScholes.o option/Norm.o option/Option.o european/ArithmeticEuropean.o \
+	asian/GeometricAsian.o asian/ArithmeticAsian.o comm/Protocol.o comm/IPC.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:
+	@rm -rf pricer
 	@rm -rf *.o
 	@rm -rf *_test
 	@rm -rf asian/*.o

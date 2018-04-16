@@ -1,5 +1,11 @@
 #include <european/BasketEuropean.h>
 
+BasketEuropean::BasketEuropean(Protocol *buff)
+    : BasketEuropean(buff->basketSize, buff->interest, buff->repo, buff->instrument, &buff->asset,
+                     (double *)(&buff->asset) + buff->basketSize * sizeof(Asset), buff->useGpu, buff->pathNum)
+{
+}
+
 BasketEuropean::BasketEuropean(int basketSize, double interest, double repo, Instrument instrument,
                                Asset *asset, double *corMatrix, bool useGpu, int pathNum)
     : basketSize(basketSize), interest(interest), repo(repo), instrument(instrument),

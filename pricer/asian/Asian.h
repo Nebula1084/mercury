@@ -3,11 +3,12 @@
 
 #include <iostream>
 
+#include <comm/Protocol.h>
 #include <option/Option.h>
 #include <option/BlackScholes.h>
 #include <simulate/MonteCarlo.h>
 
-class Asian
+class Asian : public Option
 {
 public:
   Asset asset;
@@ -17,9 +18,9 @@ public:
   int observation;
   bool useGpu;
 
+  Asian(Protocol *buff);
   Asian(Asset asset, double interest, Instrument instrument, bool useGpu, int pathNum, int observation);
 
-  virtual Result calculate() = 0;
   double formulate();
   Result simulate(bool isGeo, bool control);
 };

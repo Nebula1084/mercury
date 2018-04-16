@@ -45,7 +45,7 @@ gpu_test: GpuTest.o asian/Asian.o american/American.o american/BinomialKernel.o 
 	simulate/MonteCarloKernel.o simulate/MonteCarlo.o european/European.o \
 	european/BasketEuropean.o european/GeometricEuropean.o european/Volatility.o \
 	option/BlackScholes.o option/Norm.o option/Option.o european/ArithmeticEuropean.o \
-	asian/GeometricAsian.o asian/ArithmeticAsian.o
+	asian/GeometricAsian.o asian/ArithmeticAsian.o comm/Protocol.o comm/IPC.o
 	$(NVCC) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 clean:

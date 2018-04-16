@@ -1,26 +1,23 @@
 #include <european/Volatility.h>
 
-Volatility::Volatility()
+Volatility::Volatility(Protocol *buff)
+    : Volatility(buff->interest, buff->repo, buff->instrument, buff->premium, buff->asset.price)
 {
 }
 
-Volatility::Volatility(double r, double repo, Instrument instrument, double price, double S)
+Volatility::Volatility(double interest, double repo, Instrument instrument, double premium, double price)
+    : interest(interest), repo(repo), instrument(instrument), premium(premium), asset(Asset(price, -1))
 {
-    this->interest = r;
-    this->repo = repo;
-    this->instrument = instrument;
-    this->price = price;
-    this->asset.price = S;
 }
 
-double Volatility::calculate()
+Result Volatility::calculate()
 {
     double S = this->asset.price;
     double r = this->interest;
     double repo = this->repo;
     double T = this->instrument.maturity;
     double K = this->instrument.strike;
-    double premium = this->price;
+    double premium = this->premium;
 
     double sigmaHat = std::sqrt(2 * std::abs((log(S / K) + (r - repo) * T) / T));
 
@@ -30,7 +27,6 @@ double Volatility::calculate()
     int n = 1;
     int nmax = 100;
     double value, vega, increment;
-
 
     //construct an European Object
     Asset asset(S, sigma, interest);
@@ -51,11 +47,12 @@ double Volatility::calculate()
 
     this->asset.setVolatility(sigma);
 
-    if (std::abs(value - premium) < 1e-4)
-    {
+    Result result;
+    result.conf = -1;
 
-        return sigma;
-    }
+    if (std::abs(value - premium) < 1e-4)
+        result.mean = sigma;
     else
-        return -1;
+        result.mean = -1;
+    return result;
 }

@@ -1,27 +1,23 @@
 #ifndef _VOLATILITY_H
 #define _VOLATILITY_H
 
+#include <comm/Protocol.h>
 #include <option/Option.h>
 #include <european/European.h>
 
-#include <stdio.h>
-// #include <cmath>
-#include <iostream>
-
-class Volatility
+class Volatility : public Option
 {
-private:
-  double interest;
-  double repo;
-  Instrument instrument;
-  double price;
-  Asset asset; //need the underlying asset price for strike
+  private:
+    double interest;
+    double repo;
+    Instrument instrument;
+    double premium;
+    Asset asset; //need the underlying asset price for strike
 
-public:
-  double calculate();
-  Volatility();
-  Volatility(double, double, Instrument, double, double);
-
+  public:
+    Volatility(Protocol *buff);
+    Volatility(double interest, double repo, Instrument instrument, double premium, double S);
+    virtual Result calculate() override;
 };
 
 #endif

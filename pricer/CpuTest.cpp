@@ -25,26 +25,19 @@ int main()
     Instrument instrument7(0.0219, 2.5, 1);
     Volatility volatility7(0.04, 0.2, instrument7, 0.6251, 1.9595);
 
-    float sigma1 = volatility1.calculate();
-    std::cout << sigma1 << std::endl;
+    std::cout << volatility1.calculate() << std::endl;
 
-    float sigma2 = volatility2.calculate();
-    std::cout << sigma2 << std::endl;
+    std::cout << volatility2.calculate() << std::endl;
 
-    float sigma3 = volatility3.calculate();
-    std::cout << sigma3 << std::endl;
+    std::cout << volatility3.calculate() << std::endl;
 
-    float sigma4 = volatility4.calculate();
-    std::cout << sigma4 << std::endl;
+    std::cout << volatility4.calculate() << std::endl;
 
-    float sigma5 = volatility5.calculate();
-    std::cout << sigma5 << std::endl;
+    std::cout << volatility5.calculate() << std::endl;
 
-    float sigma6 = volatility6.calculate();
-    std::cout << sigma6 << std::endl;
+    std::cout << volatility6.calculate() << std::endl;
 
-    float sigma7 = volatility7.calculate();
-    std::cout << sigma7 << std::endl;
+    std::cout << volatility7.calculate() << std::endl;
 
     return 0;
 }

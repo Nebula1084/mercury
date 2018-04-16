@@ -1,5 +1,10 @@
 #include <asian/Asian.h>
 
+Asian::Asian(Protocol *buff)
+    : Asian(buff->asset, buff->interest, buff->instrument, buff->useGpu, buff->pathNum, buff->step)
+{
+}
+
 Asian::Asian(Asset asset, double interest, Instrument instrument, bool useGpu, int pathNum, int observation)
     : asset(asset), interest(interest), instrument(instrument), observation(observation),
       useGpu(useGpu), pathNum(pathNum)
