@@ -17,7 +17,7 @@ var confString = `
 debug: false
 commit: 0
 port: 5000
-title: Go Starter Kit
+title: Mercury
 api:
   prefix: /api
 duktape:

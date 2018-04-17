@@ -6,6 +6,7 @@ import (
 	"time"
 	"fmt"
 	"net/http"
+	"github.com/Nebula1084/mercury/server/pricer"
 )
 
 // API is a defined as struct bundle
@@ -19,17 +20,26 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 // Bind attaches api routes
 func (api *API) Bind(group *echo.Group) {
-	group.GET("/v1/conf", api.ConfHandler)
-	group.GET("/geometric", api.GeometricHandler)
+	group.GET("/stream", api.StreamHandler)
+	group.POST("/price", api.PriceHandler)
 }
 
-// ConfHandler handle the app config, for example
-func (api *API) ConfHandler(c echo.Context) error {
-	app := c.Get("app").(*App)
-	return c.JSON(200, app.Conf.Root)
+func (api *API) PriceHandler(c echo.Context) error {
+
+	protocol := new(pricer.Protocol)
+	if err := c.Bind(protocol); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	res, err := protocol.Call()
+	if err != nil {
+		fmt.Println(err.Error())
+		res = &pricer.Result{Mean: -1, Conf: -1}
+	}
+	return c.JSON(200, res)
 }
 
-func (api *API) GeometricHandler(c echo.Context) error {
+func (api *API) StreamHandler(c echo.Context) error {
 
 	websocket.Handler(func(ws *websocket.Conn) {
 		fmt.Printf("Socket incoming\n")

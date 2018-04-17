@@ -1,0 +1,9 @@
+POST http://localhost:5000/api/price
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{ "assets":[{"price":12, "volatility": 222}, {"price":12, "volatility": 223}] }
+
+###
+
