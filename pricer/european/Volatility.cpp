@@ -36,6 +36,7 @@ Result Volatility::calculate()
 
     while (sigmaDiff >= tol && n < nmax)
     {
+        // std::cout << sigma << std::endl;
         formula.asset.setVolatility(sigma);
         value = formula.calculate();
         vega = formula.vega();

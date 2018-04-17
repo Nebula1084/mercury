@@ -2,7 +2,7 @@
 
 BasketEuropean::BasketEuropean(Protocol *buff)
     : BasketEuropean(buff->basketSize, buff->interest, buff->repo, buff->instrument, &buff->asset,
-                     (double *)(&buff->asset) + buff->basketSize * sizeof(Asset), buff->useGpu, buff->pathNum)
+                     (double *)((char *)(&buff->asset) + buff->basketSize * sizeof(Asset)), buff->useGpu, buff->pathNum)
 {
 }
 

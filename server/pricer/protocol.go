@@ -41,7 +41,7 @@ type Protocol struct {
 	Repo           float64
 	Premium        float64
 	Instrument     Instrument
-	Step           int32
+	Step           int32 // observation in Asian
 	PathNum        int32
 	ClosedForm     int8
 	UseGpu         int8

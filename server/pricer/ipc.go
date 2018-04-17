@@ -2,6 +2,8 @@ package pricer
 
 import (
 	"net"
+	"time"
+	"fmt"
 )
 
 type IPC struct {
@@ -12,7 +14,8 @@ func NewIPC() (*IPC, error) {
 
 	ipc := &IPC{}
 	network := "unix"
-	lAddr := &net.UnixAddr{Name: "mercury.ipc", Net: network}
+	localName := fmt.Sprintf("mercury-%d.ipc", time.Now().UnixNano())
+	lAddr := &net.UnixAddr{Name: localName, Net: network}
 	rAddr := &net.UnixAddr{Name: "pricer.ipc", Net: network}
 	conn, err := net.DialUnix(network, lAddr, rAddr)
 	if err == nil {
