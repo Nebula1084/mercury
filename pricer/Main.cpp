@@ -12,6 +12,7 @@ void *price(void *message)
     {
         Option *task = Protocol::parse((Protocol *)recvBuf);
         Result result = task->calculate();
+        std::cout << result << std::endl;
         delete task;
         send(*connFd, &result, sizeof(Result), 0);
     }

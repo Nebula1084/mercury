@@ -26,8 +26,8 @@ struct Protocol
     char useGpu;
     char controlVariate;
     char basketSize;
-    Asset asset;
-
+    Asset asset; //First element of Asset array.
+    //correlation matrix
     static Option *parse(Protocol *buff);
 } __attribute__((packed));
 #endif

@@ -3,14 +3,12 @@
 European::European(Protocol *buff)
     : European(buff->interest, buff->repo, buff->instrument, buff->asset)
 {
-    std::cout << interest << std::endl;
-    std::cout << repo << std::endl;
-    std::cout << instrument << std::endl;
 }
 
 European::European(double interest, double repo, Instrument instrument, Asset asset)
     : interest(interest), repo(repo), instrument(instrument), asset(asset)
 {
+    this->asset.mean = -1;
 }
 
 Result European::calculate()
