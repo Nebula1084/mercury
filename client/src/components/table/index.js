@@ -61,7 +61,7 @@ export default class MercuryTable extends React.Component {
                         : ""}
                     {record.conf != null && record.conf != -1 ?
                         <Form.Item label="Confidence">
-                            {record.conf}
+                            {record.conf.toFixed(5)}
                         </Form.Item>
                         : ""
                     }
@@ -161,7 +161,19 @@ export default class MercuryTable extends React.Component {
         return ret;
     }
 
+    appendOption(data) {
+        if (this.props.closedForm)
+            data['closedForm'] = true;
+        if (this.props.useGpu)
+            data['useGpu'] = false;
+        if (this.props.controlVariate)
+            data['controlVariate'] = false;
+    }
+
     load = (data) => {
+        for (let i = 0; i < data.length; i++) {
+            this.appendOption(data[i]);
+        }
         this.props.dispatch({ type: this.props.namespace + '/import', payload: data });
     }
 
@@ -172,12 +184,7 @@ export default class MercuryTable extends React.Component {
             data[header] = '0'
         }
         data['optionType'] = '1';
-        if (this.props.closedForm)
-            data['closedForm'] = true;
-        if (this.props.useGpu)
-            data['useGpu'] = false;
-        if (this.props.controlVariate)
-            data['controlVariate'] = false;
+        this.appendOption(data);
         this.props.dispatch({ type: this.props.namespace + '/add', payload: data });
     }
 

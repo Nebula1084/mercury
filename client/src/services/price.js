@@ -17,7 +17,7 @@ export function buildProtocol(Operation, data) {
         protocol.Repo = Number(data.repo)
 
     if (data.premium)
-        protocol.premium = data.premium
+        protocol.premium = Number(data.premium)
 
     protocol.Instrument = {
         Maturity: Number(data.maturity),
