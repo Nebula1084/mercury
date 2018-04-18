@@ -16,8 +16,12 @@ export default {
             const data = yield select(state => state.arithEuro.rows[index]);
             data.basketSize = yield select(state => state.arithEuro.stockNum);
             const protocol = buildProtocol(ARITHMETIC_EUROPEAN, data);
-            const result = yield call(pricing, protocol);
-            yield put({ type: 'update', payload: { value: result.Mean, index: index, column: 'price' } });
+            let t0 = performance.now();
+            const result = yield call(pricing, protocol)
+            let t1 = performance.now();
+            yield put({ type: 'update', payload: { value: result.Mean, index: index, column: 'price' } })
+            yield put({ type: 'update', payload: { value: result.Conf, index: index, column: 'conf' } })
+            yield put({ type: 'update', payload: { value: t1 - t0, index: index, column: 'time' } })
         }
     },
     reducers: {

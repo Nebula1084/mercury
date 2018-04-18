@@ -59,6 +59,18 @@ export default class MercuryTable extends React.Component {
                             <Switch checked={record.controlVariate} onChange={value => self.handleControlVariate(value, record)} />
                         </Form.Item>
                         : ""}
+                    {record.conf != null && record.conf != -1 ?
+                        <Form.Item label="Confidence">
+                            {record.conf}
+                        </Form.Item>
+                        : ""
+                    }
+                    {record.time != null ?
+                        <Form.Item label="Time">
+                            {record.time.toFixed(2)}ms
+                        </Form.Item>
+                        : ""
+                    }
                 </Form>
             )
         }
