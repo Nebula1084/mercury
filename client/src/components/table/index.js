@@ -146,7 +146,17 @@ export default class MercuryTable extends React.Component {
             title: 'Price',
             key: 'price',
             dataIndex: 'price',
-            width: 100
+            width: 120,
+            render: (text, record) => {
+                if (text) {
+                    if (text < 0)
+                        return 'N/A'
+                    else
+                        return text.toFixed(5);
+                }
+                else
+                    return text;
+            }
         })
         return ret;
     }

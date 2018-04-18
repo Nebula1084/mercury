@@ -8,7 +8,7 @@ export default {
         stash: [],
         prices: [],
         columns: [
-            'Volatility', 'Maturity', 'Strike', 'Interest', 'Step', 'Path', 'Stock Price 0',
+            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Step', 'PathNum',
         ],
         stockNum: 1,
         pricing: undefined

@@ -7,13 +7,14 @@ export default {
         rows: [],
         stash: [],
         columns: [
-            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Step', 'Path',
+            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Step', 'PathNum',
         ],
         stockNum: 1
     },
     effects: {
         *price({ payload: index }, { call, put, select }) {
             const data = yield select(state => state.arithAsian.rows[index])
+            data.basketSize = yield select(state => state.arithAsian.stockNum);
             const protocol = buildProtocol(ARITHMETIC_ASIAN, data)
             let t0 = performance.now();
             const result = yield call(pricing, protocol)

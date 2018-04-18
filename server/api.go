@@ -32,11 +32,13 @@ func (api *API) PriceHandler(c echo.Context) error {
 	}
 
 	res, err := protocol.Call()
+	fmt.Printf("%+v\n", *protocol)
 	if err != nil {
 		fmt.Println(err.Error())
 		res = &pricer.Result{Mean: -1, Conf: -1}
 	}
-	return c.JSON(200, res)
+	fmt.Printf("%v\n", *res)
+	return c.JSON(200, *res)
 }
 
 func (api *API) StreamHandler(c echo.Context) error {

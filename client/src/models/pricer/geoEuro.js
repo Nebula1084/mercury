@@ -7,13 +7,14 @@ export default {
         rows: [],
         stash: [],
         columns: [
-            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Repo'
+            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'PathNum'
         ],
         stockNum: 1
     },
     effects: {
         *price({ payload: index }, { call, put, select }) {
             const data = yield select(state => state.geoEuro.rows[index])
+            data.basketSize = yield select(state => state.geoEuro.stockNum);
             const protocol = buildProtocol(GEOMETRIC_EUROPEAN, data)
             let t0 = performance.now();
             const result = yield call(pricing, protocol)

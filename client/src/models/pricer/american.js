@@ -7,7 +7,7 @@ export default {
         rows: [],
         stash: [],
         columns: [
-            'Volatility', 'Maturity', 'Strike', 'Interest', 'Step', 'Stock Price 0',
+            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Step',
         ],
         stockNum: 1
     },

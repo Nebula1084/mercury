@@ -36,7 +36,7 @@ function jsonParse(res) {
         console.log('result.isError')
         return Promise.reject(new Error(result.message))
       } else {
-        return result.data
+        return result
       }
     }
     return null

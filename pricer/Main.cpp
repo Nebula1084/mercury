@@ -1,5 +1,6 @@
 #include <comm/IPC.h>
 #include <comm/Protocol.h>
+#include <cmath>
 
 void *price(void *message)
 {
@@ -12,6 +13,10 @@ void *price(void *message)
     {
         Option *task = Protocol::parse((Protocol *)recvBuf);
         Result result = task->calculate();
+        if (std::isnan(result.mean))
+            result.mean = -1;
+        if (std::isnan(result.conf))
+            result.conf = -1;
         std::cout << result << std::endl;
         delete task;
         send(*connFd, &result, sizeof(Result), 0);

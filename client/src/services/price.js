@@ -13,7 +13,8 @@ export function buildProtocol(Operation, data) {
         Op: Operation
     }
     protocol.Interest = Number(data.interest)
-    protocol.Repo = Number(data.repo)
+    if (data.repo)
+        protocol.Repo = Number(data.repo)
 
     if (data.premium)
         protocol.premium = data.premium
@@ -25,18 +26,18 @@ export function buildProtocol(Operation, data) {
     }
 
     if (data.step)
-        protocol.Step = data.step
+        protocol.Step = Number(data.step);
     if (data.pathNum)
-        protocol.PathNum = data.pathNum
+        protocol.PathNum = Number(data.pathNum);
     if (data.closedForm != null)
-        protocol.ClosedForm = data.closedForm
+        protocol.ClosedForm = data.closedForm ? 1 : 0;
     if (data.useGpu != null)
-        protocol.UseGpu = data.useGpu
+        protocol.UseGpu = data.useGpu ? 1 : 0;
     if (data.controlVariate != null)
-        protocol.ControlVariate = data.controlVariate
+        protocol.ControlVariate = data.controlVariate ? 1 : 0;
 
     if (data.basketSize != null)
-        protocol.BasketSize = data.basketSize
+        protocol.BasketSize = Number(data.basketSize);
     else
         protocol.BasketSize = 1;
     protocol.Assets = []
@@ -71,7 +72,7 @@ export function buildProtocol(Operation, data) {
                         idx += i;
                     }
 
-                    protocol.CorMatrix.push(data[idx])
+                    protocol.CorMatrix.push(Number(data[idx]))
                 }
             }
     }
@@ -79,7 +80,8 @@ export function buildProtocol(Operation, data) {
 }
 
 export async function pricing(params) {
-    return post(`${config.api}price`, params)
+    let result = post(`${config.api}price`, params)
+    return result
 }
 
 export function geometric() {

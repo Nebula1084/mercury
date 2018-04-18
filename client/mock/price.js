@@ -20,8 +20,8 @@ module.exports = {
     ['POST /api/price'](req, res) {
         console.log(req.body)
         let data = price.data;
-        res.status(200).json({
-            data: data
-        });
+        res.status(200).json(
+            data
+        );
     },
 }

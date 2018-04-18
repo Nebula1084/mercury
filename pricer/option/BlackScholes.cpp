@@ -23,19 +23,15 @@ double BlackScholes::calculate()
     d2 = d1 - (sigma * timeSqrt);
 
     if (this->instrument.type == CALL)
-    {
         price = S * std::exp((mu - r - repo) * T) * normCdf(d1) - K * std::exp(-r * T) * normCdf(d2);
-        return price;
-    }
+
     else if (this->instrument.type == PUT)
-    {
         price = K * std::exp(-r * T) * normCdf(-d2) - S * std::exp((mu - r - repo) * T) * normCdf(-d1);
-        return price;
-    }
     else
-    {
-        return -1;
-    }
+        price = -1;
+    if (std::isnan(price))
+        price = -1;
+    return price;
 }
 
 double BlackScholes::vega()

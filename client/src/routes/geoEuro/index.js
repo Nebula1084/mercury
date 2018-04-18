@@ -20,7 +20,7 @@ class GeoEuroPricer extends React.Component {
                     namespace="geoEuro"
                     closedForm={true}
                     useGpu={true}
-                    addStock={false}
+                    addStock={true}
                     columns={this.props.geoEuro.columns}
                     dataSource={this.props.geoEuro.rows}
                     dispatch={this.props.dispatch}
