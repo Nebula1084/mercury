@@ -34,6 +34,7 @@ export default class MercuryTable extends React.Component {
             this.update(value, record.key, 'controlVariate')
     }
 
+
     expandedRowRender() {
         let self = this
 
@@ -87,7 +88,7 @@ export default class MercuryTable extends React.Component {
             render: (text, record) => {
                 if (record.editing)
                     return (
-                        <Select defaultValue='1' style={{ width: 70 }}>
+                        <Select defaultValue={record.optionType} style={{ width: 70 }} onChange={value => this.update(value, record.key, 'optionType')}>
                             <Select.Option value='1'>CALL</Select.Option>
                             <Select.Option value='2'>PUT</Select.Option>
                         </Select>

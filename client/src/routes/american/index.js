@@ -17,6 +17,7 @@ class AmericanPricer extends React.Component {
                 <MercuryTable
                     header="American Pricer"
                     namespace="american"
+                    useGpu={true}
                     addStock={false}
                     columns={this.props.american.columns}
                     dataSource={this.props.american.rows}
