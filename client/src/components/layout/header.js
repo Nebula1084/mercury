@@ -72,33 +72,10 @@ class Header extends React.Component {
                 </div>
             }
             <ul className={styles['navbar-right']}>
-              <li>
-                <Input placeholder='Search' style={searchStyle} />
-              </li>
+
               <li>
                 <a onClick={!fullScreen ? () => onFull(document.documentElement) : onExitFull}>
                   <Avatar size='small' icon={fullScreen ? 'shrink' : 'arrows-alt'} style={avatarStyle} />
-                </a>
-              </li>
-              <li>
-                <a>
-                  <Popover overlayStyle={popoverStyle} content={msgContent} placement='bottomRight' title='3 unread message'>
-                    <Badge count={3}>
-                      <Avatar size='small' icon='notification' style={avatarStyle} />
-                    </Badge>
-                  </Popover>
-                </a>
-              </li>
-              <li>
-                <a>
-                  <Popover overlayStyle={popoverStyle} content={<div><a onClick={onLogout}>Sign out</a></div>} placement='bottomRight' trigger='click'>
-                    <Avatar size='small' icon='user' style={avatarStyle} />
-                  </Popover>
-                </a>
-              </li>
-              <li>
-                <a onClick={onLock}>
-                  <Avatar size='small' icon='unlock' style={avatarStyle} />
                 </a>
               </li>
             </ul>

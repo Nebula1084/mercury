@@ -1,19 +1,24 @@
 import { load, add, alter, update, edit, save, cancel } from "./util.js"
-import { query } from '../../services/price'
+import { pricing, EUROPEAN, buildProtocol } from '../../services/price'
+
+
+
 export default {
     namespace: 'european',
     state: {
         rows: [],
         stash: [],
         columns: [
-            'Volatility', 'Maturity', 'Strike', 'Interest', 'Repo', 'Stock Price 0',
+            'Stock Price 0', 'Volatility 0', 'Maturity', 'Strike', 'Interest', 'Repo'
         ],
         stockNum: 1
     },
     effects: {
-        *price({ payload: index }, { call, put }) {
-            const result = yield call(query, '/api/price')
-            yield put({ type: 'update', payload: { value: result.price, index: index, column: 'price' } })
+        *price({ payload: index }, { call, put, select }) {
+            const data = yield select(state => state.european.rows[index])
+            const protocol = buildProtocol(EUROPEAN, data)
+            const result = yield call(pricing, protocol)
+            yield put({ type: 'update', payload: { value: result.Mean, index: index, column: 'price' } })
         }
     },
     reducers: {

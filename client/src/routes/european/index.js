@@ -18,6 +18,7 @@ class EuropeanPricer extends React.Component {
                 <MercuryTable
                     header="European Pricer"
                     namespace="european"
+                    useGpu={true}
                     addStock={false}
                     columns={this.props.european.columns}
                     dataSource={this.props.european.rows}
