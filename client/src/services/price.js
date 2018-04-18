@@ -35,7 +35,7 @@ export function buildProtocol(Operation, data) {
     if (data.controlVariate != null)
         protocol.ControlVariate = data.controlVariate
 
-    if (data.basketSize)
+    if (data.basketSize != null)
         protocol.BasketSize = data.basketSize
     else
         protocol.BasketSize = 1;
@@ -62,12 +62,15 @@ export function buildProtocol(Operation, data) {
                 if (i == j) {
                     protocol.CorMatrix.push(1);
                 } else {
-                    let idx = 'correlation'
+                    let idx = 'cor'
                     if (i < j) {
-                        idx += i + j;
+                        idx += i;
+                        idx += j;
                     } else {
-                        idx += j + i;
+                        idx += j;
+                        idx += i;
                     }
+
                     protocol.CorMatrix.push(data[idx])
                 }
             }

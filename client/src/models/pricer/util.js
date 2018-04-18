@@ -1,5 +1,6 @@
 function toCamelCase(str) {
-    let ret = str.replace(' ', '');
+    let ret = str.split(' ')
+    ret = ret.join('');
     ret = ret[0].toLowerCase() + ret.slice(1);
     return ret;
 }
@@ -72,8 +73,8 @@ export function alter(state) {
     }
     for (let i = 0; i < num; i++) {
         let cor = "Cor " + i + num;
-        dataIndices.push(cor);
-        newColumns.push("Cor " + i + num);
+        dataIndices.push(toCamelCase(cor));
+        newColumns.push(cor);
     }
 
     for (let i = idx; i < state.columns.length; i++) {

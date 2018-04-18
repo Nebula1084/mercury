@@ -13,10 +13,11 @@ export default {
     },
     effects: {
         *price({ payload: index }, { call, put, select }) {
-            const data = yield select(state => state.arithEuro.rows[index])
-            const protocol = buildProtocol(ARITHMETIC_EUROPEAN, data)
-            const result = yield call(pricing, protocol)
-            yield put({ type: 'update', payload: { value: result.Mean, index: index, column: 'price' } })
+            const data = yield select(state => state.arithEuro.rows[index]);
+            data.basketSize = yield select(state => state.arithEuro.stockNum);
+            const protocol = buildProtocol(ARITHMETIC_EUROPEAN, data);
+            const result = yield call(pricing, protocol);
+            yield put({ type: 'update', payload: { value: result.Mean, index: index, column: 'price' } });
         }
     },
     reducers: {
