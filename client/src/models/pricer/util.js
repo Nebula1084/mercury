@@ -50,13 +50,42 @@ export function cancel(state, { payload: index }) {
 }
 
 export function alter(state) {
-    let name = "Stock Price" + state.stockNum;
-    let dataIndex = toCamelCase(name)
-    state.columns.push(name);
-    for (let i = 0; i < state.rows.length; i++) {
+    let stock = "Stock Price " + state.stockNum;
+    let vol = "Volatility " + state.stockNum
+    let num = state.stockNum;
+    let idx = 0;
 
-        state.rows[i][dataIndex] = '0';
+    let dataIndices = []
+    dataIndices.push(toCamelCase(stock))
+    dataIndices.push(toCamelCase(vol))
+
+    let newColumns = [];
+    for (let i = 0; i < num * 2; i++) {
+        newColumns.push(state.columns[idx]);
+        idx += 1;
+    }
+    newColumns.push(stock);
+    newColumns.push(vol)
+    for (let i = 0; i < (num - 1) * num / 2; i++) {
+        newColumns.push(state.columns[idx])
+        idx += 1;
+    }
+    for (let i = 0; i < num; i++) {
+        let cor = "Cor " + i + num;
+        dataIndices.push(cor);
+        newColumns.push("Cor " + i + num);
+    }
+
+    for (let i = idx; i < state.columns.length; i++) {
+        newColumns.push(state.columns[i]);
+    }
+
+    for (let i = 0; i < state.rows.length; i++) {
+        for (let j = 0; j < dataIndices.length; j++) {
+            state.rows[i][dataIndices[j]] = '0';
+        }
     }
     state.stockNum += 1;
+    state.columns = newColumns;
     return { ...state }
 }

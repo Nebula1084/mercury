@@ -43,12 +43,34 @@ export function buildProtocol(Operation, data) {
 
     const size = protocol.BasketSize;
     for (let i = 0; i < size; i++) {
+        let v = -1;
+        if (data['volatility' + i] != null)
+            v = Number(data['volatility' + i]);
         protocol.Assets.push(
             {
                 Price: Number(data['stockPrice' + i]),
-                Volatility: Number(data['volatility' + i])
+                Volatility: v
             }
-        )
+        );
+    }
+    if (size == 1)
+        protocol.CorMatrix = [1];
+    else {
+        protocol.CorMatrix = [];
+        for (let i = 0; i < size; i++)
+            for (let j = 0; j < size; j++) {
+                if (i == j) {
+                    protocol.CorMatrix.push(1);
+                } else {
+                    let idx = 'correlation'
+                    if (i < j) {
+                        idx += i + j;
+                    } else {
+                        idx += j + i;
+                    }
+                    protocol.CorMatrix.push(data[idx])
+                }
+            }
     }
     return protocol
 }

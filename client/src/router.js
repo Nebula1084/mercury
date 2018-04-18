@@ -16,9 +16,9 @@ const Routers = function ({ history, app }) {
       component: App,
       getIndexRoute(nextState, cb) {
         require.ensure([], (require) => {
-          registerModel(app, require('./models/dashboard'))
-          cb(null, require('./routes/dashboard/'))
-        }, 'dashboard')
+          registerModel(app, require('./models/pricer/european'))
+          cb(null, require('./routes/european/'))
+        }, 'european')
       },
       childRoutes: [
         {
@@ -40,6 +40,24 @@ const Routers = function ({ history, app }) {
           }
         },
         {
+          path: 'geoEuro',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/geoEuro'))
+              cb(null, require('./routes/geoEuro/'))
+            }, 'geoEuro')
+          }
+        },
+        {
+          path: 'arithEuro',
+          getComponent(nextState, cb) {
+            require.ensure([], (require) => {
+              registerModel(app, require('./models/pricer/arithEuro'))
+              cb(null, require('./routes/arithEuro/'))
+            }, 'arithEuro')
+          }
+        },
+        {
           path: 'american',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {
@@ -49,59 +67,23 @@ const Routers = function ({ history, app }) {
           }
         },
         {
-          path: 'close',
+          path: 'arithAsian',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {
-              registerModel(app, require('./models/pricer/close'))
-              cb(null, require('./routes/close/'))
-            }, 'close')
+              registerModel(app, require('./models/pricer/arithAsian'))
+              cb(null, require('./routes/arithAsian/'))
+            }, 'arithAsian')
           }
         },
         {
-          path: 'arithmetic',
+          path: 'geoAsian',
           getComponent(nextState, cb) {
             require.ensure([], (require) => {
-              registerModel(app, require('./models/pricer/arithmetic'))
-              cb(null, require('./routes/arithmetic/'))
-            }, 'arithmetic')
+              registerModel(app, require('./models/pricer/geoAsian'))
+              cb(null, require('./routes/geoAsian/'))
+            }, 'geoAsian')
           }
         },
-        {
-          path: 'geometric',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/pricer/geometric'))
-              cb(null, require('./routes/geometric/'))
-            }, 'geometric')
-          }
-        },
-        {
-          path: 'monitor',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/pricer/geometric'))
-              cb(null, require('./routes/monitor/'))
-            }, 'monitor')
-          }
-        },
-        {
-          path: 'dashboard',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/dashboard'))
-              cb(null, require('./routes/dashboard/'))
-            }, 'dashboard')
-          }
-        },
-        {
-          path: 'charts',
-          getComponent(nextState, cb) {
-            require.ensure([], (require) => {
-              registerModel(app, require('./models/charts'))
-              cb(null, require('./routes/charts/'))
-            }, 'charts')
-          }
-        }
       ]
     },
     {

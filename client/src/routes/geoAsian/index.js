@@ -4,10 +4,10 @@ import PricingMonitor from '../../components/monitor'
 import { Input, Icon, Row, Col, Button } from 'antd';
 import { connect, select } from 'dva';
 
-class GeometricPricer extends React.Component {
+class GeoAsianPricer extends React.Component {
 
     constructor(props) {
-        super(props);        
+        super(props);
         const { dispatch } = this.props;
         this.dispatch = dispatch;
     }
@@ -17,11 +17,13 @@ class GeometricPricer extends React.Component {
         return (
             <div>
                 <MercuryTable
-                    header="Monte-Carlo Geometric Asian Pricer"
-                    namespace="geometric"
-                    addStock={true}
-                    columns={this.props.geometric.columns}
-                    dataSource={this.props.geometric.rows}
+                    header="Geometric Asian Pricer"
+                    namespace="geoAsian"
+                    closedForm={true}
+                    useGpu={true}
+                    addStock={false}
+                    columns={this.props.geoAsian.columns}
+                    dataSource={this.props.geoAsian.rows}
                     dispatch={this.props.dispatch}
                 />
             </div>
@@ -30,4 +32,4 @@ class GeometricPricer extends React.Component {
     }
 }
 
-export default connect(({geometric}) => ({ geometric }))(GeometricPricer);
+export default connect(({ geoAsian }) => ({ geoAsian }))(GeoAsianPricer);

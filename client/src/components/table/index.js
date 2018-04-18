@@ -150,7 +150,7 @@ export default class MercuryTable extends React.Component {
         }
         data['optionType'] = '1';
         if (this.props.closedForm)
-            data['optionType'] = true;
+            data['closedForm'] = true;
         if (this.props.useGpu)
             data['useGpu'] = false;
         if (this.props.controlVariate)

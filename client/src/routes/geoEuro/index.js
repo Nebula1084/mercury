@@ -4,7 +4,7 @@ import { Input, Icon, Row, Col, Button } from 'antd';
 import styles from './european.less';
 import { connect, select } from 'dva';
 
-class EuropeanPricer extends React.Component {
+class GeoEuroPricer extends React.Component {
 
     constructor(props) {
         super(props);
@@ -16,11 +16,13 @@ class EuropeanPricer extends React.Component {
         return (
             <div>
                 <MercuryTable
-                    header="European Pricer"
-                    namespace="european"
+                    header="Geometric Basket European Pricer"
+                    namespace="geoEuro"
+                    closedForm={true}
+                    useGpu={true}
                     addStock={false}
-                    columns={this.props.european.columns}
-                    dataSource={this.props.european.rows}
+                    columns={this.props.geoEuro.columns}
+                    dataSource={this.props.geoEuro.rows}
                     dispatch={this.props.dispatch}
                 />
             </div>
@@ -28,4 +30,4 @@ class EuropeanPricer extends React.Component {
     }
 }
 
-export default connect(({ european }) => ({ european }))(EuropeanPricer);
+export default connect(({ geoEuro }) => ({ geoEuro }))(GeoEuroPricer);

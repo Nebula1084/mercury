@@ -3,7 +3,7 @@ import MercuryTable from "../../components/table";
 import { Input, Icon, Row, Col, Button } from 'antd';
 import { connect, select } from 'dva';
 
-class ClosePricer extends React.Component {
+class ArithAsianPricer extends React.Component {
 
     constructor(props) {
         super(props);
@@ -15,11 +15,14 @@ class ClosePricer extends React.Component {
         return (
             <div>
                 <MercuryTable
-                    header="Closed-form Geometric Asian Pricer"
-                    namespace='close'
+                    header="Arithmetic Asian Pricer"
+                    namespace="arithAsian"
+                    closedForm={false}
+                    useGpu={true}
+                    controlVariate={true}
                     addStock={false}
-                    columns={this.props.close.columns}
-                    dataSource={this.props.close.rows}
+                    columns={this.props.arithAsian.columns}
+                    dataSource={this.props.arithAsian.rows}
                     dispatch={this.props.dispatch}
                 />
             </div>
@@ -27,4 +30,4 @@ class ClosePricer extends React.Component {
     }
 }
 
-export default connect(({ close }) => ({ close }))(ClosePricer);
+export default connect(({ arithAsian }) => ({ arithAsian }))(ArithAsianPricer);
