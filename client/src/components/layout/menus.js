@@ -25,6 +25,11 @@ class Menus extends React.Component {
 
         return (
             <Menu mode={sidebarFold ? 'vertical' : 'inline'} theme='light' onClick={onMenuClick} selectedKeys={Array.of(menukey)}>
+                <Menu.Item key='Introduction'>
+                    <Link to='/introduction'>
+                        <Icon type='bars' />Introduction
+                    </Link>
+                </Menu.Item>
                 <SubMenu key='european' title={<span><Icon type='bars' /><span>European</span></span>}>
                     <Menu.Item key='price'>
                         <Link to='/european' style={{ color: '#999' }}>

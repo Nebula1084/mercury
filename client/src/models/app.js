@@ -31,7 +31,7 @@ export default {
     * unlock ({
       payload
     }, { call, put }) {
-      hashHistory.push('/dashboard')
+      hashHistory.push('/')
     },
     * siderResponsive ({ payload }, { put, select }) {
       const { app } = yield select(state => state)
