@@ -6,7 +6,7 @@ export default {
   state: {
     sidebarFold: localStorage.getItem('sidebarFold') === 'true',
     fullScreen: localStorage.getItem('fullScreen') === 'true',
-    sidebarBgColor: localStorage.getItem('sidebarBgColor') ? localStorage.getItem('sidebarBgColor') : 'red',
+    sidebarBgColor: localStorage.getItem('sidebarBgColor') ? localStorage.getItem('sidebarBgColor') : 'black',
     sidebarBgImg: localStorage.getItem('sidebarBgImg') ? localStorage.getItem('sidebarBgImg') : '1',
     isShowSidebarBgImg: true,
     // Responsive Sidebar

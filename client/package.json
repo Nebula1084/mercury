@@ -18,7 +18,8 @@
     "react-dom": "^15.6.1",
     "react-quill": "^1.0.0",
     "react-router": "^4.1.2",
-    "@vtex/react-csv-parse": "^1.1.0"
+    "@vtex/react-csv-parse": "^1.1.0",
+    "react-remarkable": "^1.1.0"
   },
   "devDependencies": {
     "atool-build": "^1.0.0",
