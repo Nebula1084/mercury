@@ -1,0 +1,159 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt, twocolumn]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\usepackage{graphicx} % Required for adding images
+
+\usepackage{float} % Image position
+\usepackage{makecell}
+\usepackage{url}
+\usepackage{geometry} % Required for adjusting page dimensions
+\usepackage{amsmath}
+
+\geometry{
+	top=1cm, % Top margin
+	bottom=1.5cm, % Bottom margin
+	left=2cm, % Left margin
+	right=2cm, % Right margin
+	includehead, % Include space for a header
+	includefoot, % Include space for a footer
+	%showframe, % Uncomment to show how the type block is set on the page
+}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+\normalfont \normalsize 
+\textsc{University of Hong Kong, Department of Computer Science} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Comp 7405: Mercury \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{
+Hai Jiewen
+} % Your name
+
+\date{} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+\section{Black Scholes}
+
+\begin{equation}
+	\begin{split}
+		C(S,t) & = Se^{-q(T-t)}N(d_1)-Ke^{-r(T-t)}N(d_2) \\
+		P(S,t) & = Ke^{-r(T-t)}N(-d_2)-Se^{-q(T-t)}N(-d_1) \\
+		d_1 & = \frac{\ln(S/K)+(r-q)(T-t)}{\sigma\sqrt{T-t}} + \frac{1}{2}\sigma\sqrt{T-t} \\
+		d_2 & = \frac{\ln(S/K)+(r-q)(T-t)}{\sigma\sqrt{T-t}} - \frac{1}{2}\sigma\sqrt{T-t}
+	\end{split}
+\end{equation}
+
+\section{Normal Distribution}
+\begin{equation}
+	\begin{split}
+	\phi(x)&=\frac{1}{\sqrt{2\pi}}e^{-\frac{1}{2}x^2}\\
+	\Phi(x)&=\frac{1}{2}+\frac{1}{\sqrt{2\pi}}\cdot e^{-x^2/2}\big[x+\frac{x^3}{3}+\frac{x^5}{3\cdot 5}+\cdot \cdot \frac{x^{2n+1}}{(2n+1)!!}+\cdot \cdot \big]
+\end{split}
+\end{equation}
+
+\section{Geometric Mean Basket European Option}
+\begin{equation}
+	B_g(t)=\big(\prod_{i=1}^n S_i(t)\big)^\frac{1}{n}
+\end{equation}
+
+\begin{equation}
+	\begin{split}
+		\sigma_{B_g} & = \frac{\sqrt{\sum_{i=1}^{n}\sum_{j=1}^{n}\sigma_i\sigma_j\rho_{i,j}}}{n} \\
+		\mu_{B_g} & = r-\frac{1}{2}\frac{\sum_{i=1}^{n}\sigma_i^2}{n}+\frac{1}{2}\sigma^2_{B_g}
+	\end{split}
+\end{equation}
+
+\begin{equation}
+	\begin{split}
+		C_{B_g} & = e^{-rT}\big(B_g(0)e^{\mu_{B_g}T}N(\hat{d}_1) - KN(\hat{d}_2)\big)\\
+		P_{B_g} & = e^{-rT}\big(KN(-\hat{d}_2) -B_g(0)e^{\mu_{B_g}T}N(-\hat{d}_1)  \big)
+	\end{split}
+\end{equation}
+
+\begin{equation}
+	\hat{d}_1=\hat{d}_2+\sigma_{B_g} \sqrt{T}=\frac{\ln(B_g(0)/K)+(\mu_{B_g}+\frac{1}{2}\sigma^2_{B_g})T}{\sigma_{B_g}\sqrt{T-t}}
+\end{equation}
+
+\section{Geometric Asian Option}
+\begin{equation}
+	\hat{S}(T)=\big(\prod_{i=1}^n S(t_i)\big)^{\frac{1}{n}}
+\end{equation}
+
+\begin{equation}
+	\begin{split}
+		\hat{\sigma} & = \sigma \sqrt{\frac{(n+1)(2n+1)}{6n^2}} \\
+		\hat{\mu}    & = (r-\frac{1}{2}\sigma^2)\frac{n+1}{2n}+\frac{1}{2}\hat{\sigma}^2
+	\end{split}
+\end{equation}
+
+\begin{equation}
+	\begin{split}
+		C_(\hat{S}, T) &=e^{-rT}\big(S_0e^{\hat{\mu}T}N(\hat{d}_1)-KN(\hat{d}_2)\big)\\
+		P_(\hat{S}, T) &=e^{-rT}\big(KN(-\hat{d}_2)-S_0e^{\hat{\mu}T}N(-\hat{d}_1)\big)
+	\end{split}
+\end{equation}
+
+\begin{equation}
+	\hat{d}_1=\hat{d}_2+\hat{\sigma}\sqrt{T}=\frac{\ln(S_0/K)+(\hat{\mu}+\frac{1}{2}\hat{\sigma}^2)T}{\hat{\sigma}\sqrt{T}}
+\end{equation}
+\end{document}
